@@ -146,7 +146,7 @@ void straighten(Mat &src, Mat &dst){
 
 int main(int argc, const char** argv){
 	/// Load an image
-	src = imread( "/home/jacek/Studia/PIRO/face_rec_test/benchmark.png" );
+	src = imread( "./img/benchmark.png" );
 	if( !src.data )
 	{ return -1; }
 	/// Convert the image to grayscale
