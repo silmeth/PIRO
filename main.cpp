@@ -7,6 +7,8 @@
 #include <iostream>
 #include <stdio.h>
 
+#include <cmath>
+
 using namespace std;
 using namespace cv;
 
@@ -26,21 +28,25 @@ int min_adapt_block_size = 1;
 int canny_kernel_size = 1;
 int max_canny_kernel_size = 200;
 
-std::vector<cv::Vec4i> hough_lines;
+std::vector<cv::Vec4i> hough_lines; // to find contours?
 int hough_rho = 1;
 int hough_theta = 1;
 int hough_threshold = 20;
 int hough_min_line_length = 30;
 int hough_max_line_gap = 10;
 
-vector<vector<Point> > contours;
+vector<vector<Point> > contours; //contours of the paper sheet
 vector<Vec4i> hierarchy;
 
 vector<vector<Point> > approx_contours;
 
-//struct
+// parameterized line
+typedef struct {
+	double atana; // arc tangent a
+	double b; // parameter b
+} par_line;
 
-void camera_raw_display(){
+void camera_raw_display() {
 	int c;
 	IplImage* color_img;
 	CvCapture* cv_cap = cvCaptureFromCAM(1);
@@ -84,26 +90,26 @@ void adaptive_treshold(Mat &src, Mat &dst, int max_value, int block_size, double
 			THRESH_BINARY, block_size, threshold_constant);
 }
 
-void adaptive_threshold_window(int, void*){
+void adaptive_threshold_window(int, void*) {
 	adaptive_treshold(src_gray, dst, min_adapt_max_val, min_adapt_block_size*2 + 1, 0.0);
 	imshow(window_name, dst);
 }
 
-void hough_canny_window(int, void*){
+void hough_canny_window(int, void*) { // find edges of paper sheet
 	Mat temp;
+
 	canny_blur_filter(src_gray, temp, 3, 50, 3);
 	HoughLinesP(temp, hough_lines, hough_rho, CV_PI/1800*hough_theta, hough_threshold,
 				(double)hough_min_line_length, (double)hough_max_line_gap);
 	temp.copyTo(dst);
-	for( size_t i = 0; i < hough_lines.size(); i++ )
-	  {
+	for( size_t i = 0; i < hough_lines.size(); i++ ) {
 	    Vec4i l = hough_lines[i];
 	    line( dst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, CV_AA);
 	  }
 	imshow(window_name, dst);
 }
 
-void contours_window(int, void*){
+void contours_window(int, void*) {
 	Mat temp;
 	canny_blur_filter(src_gray, temp, 3, 50, 3);
 	findContours( temp, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
@@ -111,11 +117,11 @@ void contours_window(int, void*){
 	Mat drawing = Mat::zeros( temp.size(), CV_8UC3 );
 	// Z tutka https://github.com/Itseez/opencv/blob/master/samples/cpp/contours2.cpp
 	approx_contours.resize(contours.size());
-	for(int i=0; i<contours.size(); i++){
+	for(unsigned int i = 0; i < contours.size(); i++){
 		approxPolyDP(Mat(contours[i]), approx_contours[i], 5, true);
 	}
 	// Plotujemy !!!!
-	for( unsigned int i=0; i< approx_contours.size(); i++ ){
+	for( unsigned int i=0; i< approx_contours.size(); i++ ) {
 		Scalar color = Scalar( 255, 0, 0);
 		drawContours( drawing, contours, i, color, 1, 8, hierarchy, 0, Point() );
 		color = Scalar( 0, 255, 0);
@@ -124,7 +130,7 @@ void contours_window(int, void*){
 	imshow(window_name, drawing);
 }
 
-void straighten(Mat &src, Mat &dst){
+void straighten(Mat &src, Mat &dst) {
 	std::vector<cv::Vec4i> slines;
 	Mat temp;
 	blur(src, temp, Size(3,3));
@@ -132,19 +138,25 @@ void straighten(Mat &src, Mat &dst){
 	HoughLinesP(temp, slines, 1, CV_PI/360, 65, 80, 10);
 	Mat drawing = Mat::zeros( temp.size(), CV_8UC3 );
 	drawing = Scalar::all(0);
-	for( unsigned int i = 0; i < slines.size(); i++ )
-	  {
+
+	vector<par_line> par_lines;
+
+	for( unsigned int i = 0; i < slines.size(); i++ ) {
 		Vec4i l = slines[i];
 		line( drawing, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, CV_AA);
+
+		par_line tmp_line;
+		tmp_line.atana = atan((double)(l[3]-l[1])/((double)(l[2]-l[0])));
+		tmp_line.b = l[1] - (double)(l[3]-l[1])/((double)(l[2]-l[0]))*l[0];
+		cout << "b" << i << " = " << tmp_line.b << "\natan(a)" << i << " = " << tmp_line.atana*180/3.14159 << endl;
+	    par_lines.push_back(tmp_line);
 	  }
 	cout << slines.size();
-
-
 
 	imshow( window_name, drawing );
 }
 
-int main(int argc, const char** argv){
+int main(int argc, const char** argv) {
 	/// Load an image
 	src = imread( "./img/benchmark.png" );
 	if( !src.data )
