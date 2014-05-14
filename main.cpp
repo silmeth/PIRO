@@ -38,7 +38,7 @@ vector<Vec4i> hierarchy;
 
 vector<vector<Point> > approx_contours;
 
-struct
+//struct
 
 void camera_raw_display(){
 	int c;
