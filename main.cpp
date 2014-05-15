@@ -44,6 +44,7 @@ vector<vector<Point> > approx_contours;
 typedef struct {
 	double atana; // arc tangent a
 	double b; // parameter b
+	double len;
 } par_line;
 
 void camera_raw_display() {
@@ -152,6 +153,9 @@ void straighten(Mat &src, Mat &dst) {
 	    par_lines.push_back(tmp_line);
 	  }
 	cout << slines.size();
+
+	vector<par_line> paper_borders;
+
 
 	imshow( window_name, drawing );
 }
