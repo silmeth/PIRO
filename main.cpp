@@ -131,6 +131,33 @@ void contours_window(int, void*) {
 	imshow(window_name, drawing);
 }
 
+/*
+ * Copied from http://opencv-code.com/tutorials/automatic-perspective-correction-for-quadrilateral-objects/
+ */
+void sortCorners(std::vector<cv::Point2f>& corners, cv::Point2f center)
+{
+    std::vector<cv::Point2f> top, bot;
+
+    for (int i = 0; i < corners.size(); i++)
+    {
+        if (corners[i].y < center.y)
+            top.push_back(corners[i]);
+        else
+            bot.push_back(corners[i]);
+    }
+
+    cv::Point2f tl = top[0].x > top[1].x ? top[1] : top[0];
+    cv::Point2f tr = top[0].x > top[1].x ? top[0] : top[1];
+    cv::Point2f bl = bot[0].x > bot[1].x ? bot[1] : bot[0];
+    cv::Point2f br = bot[0].x > bot[1].x ? bot[0] : bot[1];
+
+    corners.clear();
+    corners.push_back(tl);
+    corners.push_back(tr);
+    corners.push_back(br);
+    corners.push_back(bl);
+}
+
 void straighten(Mat &src, Mat &dst) {
 	std::vector<cv::Vec4i> slines;
 	Mat temp;
@@ -205,6 +232,29 @@ void straighten(Mat &src, Mat &dst) {
 		}
 		cout << 5*tan(paper_borders[i].atana)+paper_borders[i].b << endl;
 	}
+
+	/// Znajdź narożniki
+	std::vector<cv::Point2f> corners;
+	for (unsigned int i = 0; i < paper_borders.size(); i++){
+		for (unsigned int j = i+1; j < paper_borders.size(); j++){
+			/// Znajdź przecięcie między nierównoległymi do siebie brzegami kartki
+			if( abs(paper_borders[i].atana-paper_borders[j].atana) > 20.0*3.14159/180.0 ) {
+				Point2f p;
+				p.x = (paper_borders[i].b - paper_borders[j].b) /
+						((tan(paper_borders[j].atana) - tan(paper_borders[i].atana)));
+				p.y = p.x * tan(paper_borders[i].atana) + paper_borders[i].b;
+				corners.push_back(p);
+			}
+		}
+	}
+	/// Wyświetl punkty przecięcia
+	for (unsigned int i = 0; i < corners.size(); i++){
+		circle(src_gray, corners[i], 10, Scalar(255,255,255), 2);
+		cout << "x: " << corners[i].x << "  y: " << corners[i].y << endl;
+	}
+
+
+
 	imshow( window_name, src_gray );
 }
 
