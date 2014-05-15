@@ -138,8 +138,7 @@ void sortCorners(std::vector<cv::Point2f>& corners, cv::Point2f center)
 {
     std::vector<cv::Point2f> top, bot;
 
-    for (int i = 0; i < corners.size(); i++)
-    {
+    for ( unsigned int i = 0; i < corners.size(); i++ ) {
         if (corners[i].y < center.y)
             top.push_back(corners[i]);
         else
@@ -238,7 +237,7 @@ void straighten(Mat &src, Mat &dst) {
 	for (unsigned int i = 0; i < paper_borders.size(); i++){
 		for (unsigned int j = i+1; j < paper_borders.size(); j++){
 			/// Znajdź przecięcie między nierównoległymi do siebie brzegami kartki
-			if( abs(paper_borders[i].atana-paper_borders[j].atana) > 20.0*3.14159/180.0 ) {
+			if( abs(abs(paper_borders[i].atana)-abs(paper_borders[j].atana)) > 45.0*3.14159/180.0 ) {
 				Point2f p;
 				p.x = (paper_borders[i].b - paper_borders[j].b) /
 						((tan(paper_borders[j].atana) - tan(paper_borders[i].atana)));
@@ -250,12 +249,36 @@ void straighten(Mat &src, Mat &dst) {
 	/// Wyświetl punkty przecięcia
 	for (unsigned int i = 0; i < corners.size(); i++){
 		circle(src_gray, corners[i], 10, Scalar(255,255,255), 2);
-		cout << "x: " << corners[i].x << "  y: " << corners[i].y << endl;
+		//cout << "x: " << corners[i].x << "  y: " << corners[i].y << endl;
 	}
 
+	/// Get mass center
+	cv::Point2f center(0,0);
+	for (unsigned int i = 0; i < corners.size(); i++)
+	    center += corners[i];
 
+	center *= (1. / corners.size());
+	sortCorners(corners, center);
+	for (unsigned int i = 0; i < corners.size(); i++){
+		cout << "x: " << corners[i].x << "  y: " << corners[i].y << endl;
+	}
+	// Define the destination image
+	cv::Mat quad = cv::Mat::zeros(240, 320, CV_8UC3);
 
-	imshow( window_name, src_gray );
+	// Corners of the destination image
+	std::vector<cv::Point2f> quad_pts;
+	quad_pts.push_back(cv::Point2f(0, 0));
+	quad_pts.push_back(cv::Point2f(quad.cols, 0));
+	quad_pts.push_back(cv::Point2f(quad.cols, quad.rows));
+	quad_pts.push_back(cv::Point2f(0, quad.rows));
+
+	// Get transformation matrix
+	cv::Mat transmtx = cv::getPerspectiveTransform(corners, quad_pts);
+
+	// Apply perspective transformation
+	cv::warpPerspective(src_gray, quad, transmtx, quad.size());
+
+	imshow( window_name, quad );
 }
 
 int main(int argc, const char** argv) {
