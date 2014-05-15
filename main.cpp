@@ -143,21 +143,69 @@ void straighten(Mat &src, Mat &dst) {
 	vector<par_line> par_lines;
 
 	for( unsigned int i = 0; i < slines.size(); i++ ) {
+		/// Wyświetla linie obliczone przez transformatę Hougha
+		//line( drawing, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, CV_AA);
 		Vec4i l = slines[i];
-		line( drawing, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, CV_AA);
-
 		par_line tmp_line;
 		tmp_line.atana = atan((double)(l[3]-l[1])/((double)(l[2]-l[0])));
 		tmp_line.b = l[1] - (double)(l[3]-l[1])/((double)(l[2]-l[0]))*l[0];
-		cout << "b" << i << " = " << tmp_line.b << "\natan(a)" << i << " = " << tmp_line.atana*180/3.14159 << endl;
+		tmp_line.len = sqrt(pow( (double)(l[0]-l[2]), 2.0 ) + pow( (double)(l[1]-l[3]), 2.0 ));
+		//cout << "b" << i << " = " << tmp_line.b << "\natan(a)" << i << " = " << tmp_line.atana*180/3.14159
+		//     << "\nlen = " << tmp_line.len << endl;
 	    par_lines.push_back(tmp_line);
 	  }
 	cout << slines.size();
-
+	/// Uśrednione linie będące krawędziami kartki
 	vector<par_line> paper_borders;
-
-
-	imshow( window_name, drawing );
+	// Dla każdej linii znajdź taką, która mieści się w zakresie +- 10 stopni
+	// Pierwsza linia trafia od razu
+	paper_borders.push_back(par_lines[0]);
+	for( unsigned int i = 1; i < par_lines.size(); i++ ) {
+		bool found_similiar = false;
+		for (unsigned int j = 0; j < paper_borders.size(); j++){
+			/// Nowy odcinek podobny do któregoś z istniejących
+			if ( abs(par_lines[i].atana - paper_borders[j].atana) < 10.0*3.14159/180.0
+				&& abs(par_lines[i].b - paper_borders[j].b) < 150.0 ) {
+				/// Nowa wartość jako średnia ważona
+				paper_borders[j].atana = (paper_borders[j].atana*paper_borders[j].len
+									   + par_lines[i].atana*par_lines[i].len)
+									   / (paper_borders[j].len + par_lines[i].len);
+				paper_borders[j].b = (paper_borders[j].b*paper_borders[j].len
+													   + par_lines[i].b*par_lines[i].len)
+													   / (paper_borders[j].len + par_lines[i].len);
+				/// Zapisz nową długość uśrednionej prostej
+				paper_borders[j].len = paper_borders[j].len + par_lines[i].len;
+				found_similiar = true;
+			}
+		}
+		/// Jeżeli żaden element nie był podobny, dodaj nową krawędź
+		if ( !found_similiar ) {
+			paper_borders.push_back(par_lines[i]);
+		}
+	}
+	/// Wypisz nowo obliczone krawędzie kartki
+	for (unsigned int i = 0; i < paper_borders.size(); i++){
+		cout << "b" << i << " = " << paper_borders[i].b << "\natan(a)" << i << " = " << paper_borders[i].atana*180/3.14159
+				     << "\nlen = " << paper_borders[i].len << endl;
+	}
+	/// Wyświetl nowo obliczone krawędzie kartki
+	for (unsigned int i = 0; i < paper_borders.size(); i++){
+		/// Oblicz punktu końcowe prostych poziomych
+		/// TODO Zmień ze stałych wartości na zależne od rozmiaru obrazu
+		if( abs(paper_borders[i].atana) < 20.0*3.14159/180.0 ){
+			line( src_gray, Point(5, 5*tan(paper_borders[i].atana)+paper_borders[i].b),
+						   Point(635, 635*tan(paper_borders[i].atana)+paper_borders[i].b),
+					       Scalar(255,255,255), 3, CV_AA);
+		}
+		/// Oblicz punkty końconwe prostych pionowych
+		else {
+			line( src_gray, Point((5-paper_borders[i].b) / tan(paper_borders[i].atana), 5),
+						   Point((475-paper_borders[i].b) / tan(paper_borders[i].atana), 475),
+						   Scalar(255,255,255), 3, CV_AA);
+		}
+		cout << 5*tan(paper_borders[i].atana)+paper_borders[i].b << endl;
+	}
+	imshow( window_name, src_gray );
 }
 
 int main(int argc, const char** argv) {
