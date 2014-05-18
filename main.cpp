@@ -180,7 +180,6 @@ void straighten(Mat &src, Mat &dst) {
 		//     << "\nlen = " << tmp_line.len << endl;
 	    par_lines.push_back(tmp_line);
 	  }
-	cout << slines.size();
 	/// Uśrednione linie będące krawędziami kartki
 	vector<par_line> paper_borders;
 	// Dla każdej linii znajdź taką, która mieści się w zakresie +- 10 stopni
@@ -190,7 +189,7 @@ void straighten(Mat &src, Mat &dst) {
 		bool found_similiar = false;
 		for (unsigned int j = 0; j < paper_borders.size(); j++){
 			/// Nowy odcinek podobny do któregoś z istniejących
-			if ( abs(par_lines[i].atana - paper_borders[j].atana) < 10.0*3.14159/180.0
+			if ( abs(abs(par_lines[i].atana) - abs(paper_borders[j].atana)) < 10.0*3.14159/180.0
 				&& abs(par_lines[i].b - paper_borders[j].b) < 150.0 ) {
 				/// Nowa wartość jako średnia ważona
 				paper_borders[j].atana = (paper_borders[j].atana*paper_borders[j].len
@@ -209,12 +208,8 @@ void straighten(Mat &src, Mat &dst) {
 			paper_borders.push_back(par_lines[i]);
 		}
 	}
-	/// Wypisz nowo obliczone krawędzie kartki
-	for (unsigned int i = 0; i < paper_borders.size(); i++){
-		cout << "b" << i << " = " << paper_borders[i].b << "\natan(a)" << i << " = " << paper_borders[i].atana*180/3.14159
-				     << "\nlen = " << paper_borders[i].len << endl;
-	}
 	/// Wyświetl nowo obliczone krawędzie kartki
+	/*
 	for (unsigned int i = 0; i < paper_borders.size(); i++){
 		/// Oblicz punktu końcowe prostych poziomych
 		/// TODO Zmień ze stałych wartości na zależne od rozmiaru obrazu
@@ -229,9 +224,8 @@ void straighten(Mat &src, Mat &dst) {
 						   Point((475-paper_borders[i].b) / tan(paper_borders[i].atana), 475),
 						   Scalar(255,255,255), 3, CV_AA);
 		}
-		cout << 5*tan(paper_borders[i].atana)+paper_borders[i].b << endl;
 	}
-
+	*/
 	/// Znajdź narożniki
 	std::vector<cv::Point2f> corners;
 	for (unsigned int i = 0; i < paper_borders.size(); i++){
@@ -246,24 +240,15 @@ void straighten(Mat &src, Mat &dst) {
 			}
 		}
 	}
-	/// Wyświetl punkty przecięcia
-	for (unsigned int i = 0; i < corners.size(); i++){
-		circle(src_gray, corners[i], 10, Scalar(255,255,255), 2);
-		//cout << "x: " << corners[i].x << "  y: " << corners[i].y << endl;
-	}
-
 	/// Get mass center
 	cv::Point2f center(0,0);
-	for (unsigned int i = 0; i < corners.size(); i++)
+	for ( unsigned int i = 0; i < corners.size(); i++ ) {
 	    center += corners[i];
-
+	}
 	center *= (1. / corners.size());
 	sortCorners(corners, center);
-	for (unsigned int i = 0; i < corners.size(); i++){
-		cout << "x: " << corners[i].x << "  y: " << corners[i].y << endl;
-	}
 	// Define the destination image
-	cv::Mat quad = cv::Mat::zeros(240, 320, CV_8UC3);
+	cv::Mat quad = cv::Mat::zeros(400, 600, CV_8UC3);
 
 	// Corners of the destination image
 	std::vector<cv::Point2f> quad_pts;
@@ -274,10 +259,8 @@ void straighten(Mat &src, Mat &dst) {
 
 	// Get transformation matrix
 	cv::Mat transmtx = cv::getPerspectiveTransform(corners, quad_pts);
-
 	// Apply perspective transformation
 	cv::warpPerspective(src_gray, quad, transmtx, quad.size());
-
 	imshow( window_name, quad );
 }
 
