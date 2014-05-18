@@ -4,7 +4,6 @@
  *  Created on: May 18, 2014
  *      Author: jacek
  */
-
 #ifndef TESTS_H_
 #define TESTS_H_
 
@@ -20,20 +19,20 @@
 using namespace std;
 using namespace cv;
 
-Mat test_src;
-char * win_name;
+extern Mat test_src;
+extern char * win_name;
 
 /// CANNY
-int canny_low_threshold = 1;
-int canny_ratio = 1;
-int canny_kernel_size = 3;
+extern int canny_low_threshold;
+extern int canny_ratio;
+extern int canny_kernel_size;
 /// HOUGH
-int hough_rho = 1;
-int hough_theta = 1;
-int hough_voters = 1;
-int hough_min_line_len = 1;
-int hough_max_line_gap = 1;
-vector<Vec4i> hough_lines;
+extern int hough_rho;
+extern int hough_theta;
+extern int hough_voters;
+extern int hough_min_line_len;
+extern int hough_max_line_gap;
+extern vector<Vec4i> hough_lines;
 
 /*
  * Inicjalizacja testów

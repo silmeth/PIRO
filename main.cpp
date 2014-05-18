@@ -3,16 +3,10 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/contrib/contrib.hpp"
 
+#include "tests.h"
 #include "shape_finder.h"
-//#include "tests.h"
-
-#include <iostream>
-#include <stdio.h>
-
-#include <cmath>
 
 using namespace std;
-using namespace cv;
 
 Mat src, src_gray;
 Mat dst;
@@ -55,8 +49,10 @@ int main(int argc, const char** argv) {
 	/// Convert the image to grayscale
 	cvtColor( src, src_gray, CV_BGR2GRAY );
 	/// Create a window
+	straighten(src_gray, dst, 450, 300);
+	init_tests(window_name, dst);
 	namedWindow( window_name, CV_WINDOW_AUTOSIZE );
-	straighten(src_gray, dst, 300, 450);
-	imshow(window_name, dst);
+	test_hough();
 	waitKey(0);
+	return 0;
 }

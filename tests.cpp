@@ -6,6 +6,23 @@
  */
 #include "tests.h"
 
+char *win_name;
+Mat test_src;
+
+/// 3 lub 5
+int canny_kernel_size = 3;
+/// Najlepiej 1 lub 2
+int canny_ratio = 1;
+/// Najlepiej 50
+int canny_low_threshold = 1;
+
+int hough_rho = 1;
+int hough_theta = 1;
+int hough_voters = 1;
+int hough_min_line_len = 1;
+int hough_max_line_gap = 1;
+vector<Vec4i> hough_lines;
+
 void init_tests(char* window_name, Mat &src) {
 	/// Copy window name
 	win_name = window_name;
@@ -38,12 +55,13 @@ void test_canny() {
 void test_hough_window(int, void*) {
 	/// Create destination
 	Mat temp;
+	test_src.copyTo(temp);
 	/// Apply blur
 	blur(temp, temp, Size(3,3));
 	/// Apply Canny to destination Matrix
-	Canny(temp, temp, 100, 100, 3);
+	Canny(temp, temp, 50, 50, 3);
 	/// Apply Probabilistic Hough Lines
-	HoughLinesP(temp, hough_lines, (double)hough_rho, (double)CV_PI/180*hough_theta, hough_voters,
+	HoughLinesP(temp, hough_lines, (double)hough_rho, CV_PI/(double)(180*hough_theta), hough_voters,
 				(double)hough_min_line_len, (double)hough_max_line_gap);
 	/// Print found lines on temp
 	for( size_t i = 0; i < hough_lines.size(); i++ ) {
@@ -62,6 +80,7 @@ void test_hough() {
 }
 
 /// CONTOURS
+/// TODO dokończyćs
 void test_contours_window() {
 	Mat temp;
 	/// Znalezione kontury

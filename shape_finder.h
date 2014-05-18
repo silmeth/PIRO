@@ -13,7 +13,6 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/contrib/contrib.hpp"
 
-
 #include <iostream>
 #include <stdio.h>
 
@@ -43,6 +42,6 @@ void sortCorners(vector<Point2f>& corners, Point2f center);
 /*
  * Prostuje obraz
  */
-void straighten(Mat &src, Mat &dst, int rows, int cols);
+void straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols);
 
 #endif /* SHAPE_FINDER_H_ */
