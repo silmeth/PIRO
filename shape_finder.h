@@ -40,6 +40,10 @@ void camera_raw_display(int num);
  */
 void camera_straighten_display(int num, char* window_name);
 /*
+ *
+ */
+void camera_contours_display(int num);
+/*
  * Sortuje narożniki w kolejności: górny lewy, górny prawy, dolny prawy, dolny lewy
  */
 void sortCorners(vector<Point2f>& corners, Point2f center);

@@ -31,9 +31,9 @@ void camera_straighten_display(int num, char* window_name) {
 			cam_mat.copyTo(result);
 			if ( straighten(cam_mat, result, 450, 300) == true ) {
 				/// Apply blur
-					blur(result, result, Size(3,3));
-					/// Apply Canny to destination Matrix
-					Canny(result, result, 50, 50, 3);
+				///	blur(result, result, Size(3,3));
+				///	/// Apply Canny to destination Matrix
+				///	Canny(result, result, 50, 50, 3);
 				imshow("Video", result); // show frame
 			}
 		}
@@ -44,6 +44,56 @@ void camera_straighten_display(int num, char* window_name) {
 	/* clean up */
 	cvReleaseCapture( &cv_cap );
 	cvDestroyWindow("Video");
+}
+
+void camera_contours_display(int num) {
+	int c;
+		IplImage* color_img;
+		CvCapture* cv_cap = cvCaptureFromCAM(num);
+		cvNamedWindow("Video", 0); // create window
+		resizeWindow("Video", 700,700);
+		for(;;) {
+			color_img = cvQueryFrame(cv_cap); // get frame
+			if(color_img != 0) {
+				Mat cam_mat(color_img);
+				Mat result;
+				cam_mat.copyTo(result);
+				if ( straighten(cam_mat, result, 450, 300) == true ) {
+					///Apply blur
+					blur(result, result, Size(3,3));
+					///Apply Canny to destination Matrix
+					Canny(result, result, 50, 50, 3);
+					/// Vectors for storing contours
+					vector<vector<Point> > contours; //contours of the paper sheet
+					vector<vector<Point> > approx_contours; //approx contours of the paper sheet
+					vector<Vec4i> hierarchy;
+					/// Cut 10 px from each side
+					result = result(Rect(10, 10, temp.cols-20, temp.rows-20));
+					findContours( result, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+					/// Draw contours
+					Mat drawing = Mat::zeros( result.size(), CV_8UC3 );
+					/// https://github.com/Itseez/opencv/blob/master/samples/cpp/contours2.cpp
+					approx_contours.resize(contours.size());
+					for(unsigned int i = 0; i < contours.size(); i++){
+						approxPolyDP(Mat(contours[i]), approx_contours[i], 5, true);
+					}
+					// Plotujemy !!!!
+					for( unsigned int i=0; i< approx_contours.size(); i++ ) {
+						Scalar color = Scalar( 255, 0, 0);
+						drawContours( drawing, contours, i, color, 1, 8, hierarchy, 0, Point() );
+						color = Scalar( 0, 255, 0);
+						drawContours( drawing, approx_contours, i, color, 1, 8, hierarchy, 0, Point() );
+					}
+					imshow("Video", drawing);
+				}
+			}
+			c = cvWaitKey(10); // wait 10 ms or for key stroke
+			if(c == 27)
+				break; // if ESC, break and quit
+		}
+		/* clean up */
+		cvReleaseCapture( &cv_cap );
+		cvDestroyWindow("Video");
 }
 
 /*
@@ -168,3 +218,5 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 	warpPerspective(src, dst, transmtx, dst.size());
 	return true;
 }
+
+
