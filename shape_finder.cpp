@@ -58,7 +58,7 @@ void camera_contours_display(int num) {
 				Mat cam_mat(color_img);
 				Mat result;
 				cam_mat.copyTo(result);
-				if ( straighten(cam_mat, result, 450, 300) == true ) {
+				if (straighten(cam_mat, result, 423, 300) == true ) {
 					///Apply blur
 					blur(result, result, Size(3,3));
 					///Apply Canny to destination Matrix
@@ -68,27 +68,41 @@ void camera_contours_display(int num) {
 					vector<vector<Point> > approx_contours; //approx contours of the paper sheet
 					vector<Vec4i> hierarchy;
 					/// Cut 10 px from each side
-					result = result(Rect(10, 10, temp.cols-20, temp.rows-20));
-					findContours( result, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+					result = result(Rect(10, 10, result.cols-20, result.rows-20));
+					findContours( result, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0) );
 					/// Draw contours
 					Mat drawing = Mat::zeros( result.size(), CV_8UC3 );
 					/// https://github.com/Itseez/opencv/blob/master/samples/cpp/contours2.cpp
-					approx_contours.resize(contours.size());
-					for(unsigned int i = 0; i < contours.size(); i++){
-						approxPolyDP(Mat(contours[i]), approx_contours[i], 5, true);
+//					approx_contours.resize(contours.size());
+					for(unsigned int i = 0; i < contours.size(); i++) {
+						if(contourArea(contours[i]) > 20 && hierarchy[i][3] == -1) {
+							vector<Point> tmp_contour;
+							approxPolyDP(Mat(contours[i]), tmp_contour, 5, true);
+							approx_contours.push_back(tmp_contour);
+						}
 					}
 					// Plotujemy !!!!
-					for( unsigned int i=0; i< approx_contours.size(); i++ ) {
-						Scalar color = Scalar( 255, 0, 0);
-						drawContours( drawing, contours, i, color, 1, 8, hierarchy, 0, Point() );
-						color = Scalar( 0, 255, 0);
-						drawContours( drawing, approx_contours, i, color, 1, 8, hierarchy, 0, Point() );
+//					for(unsigned int i=0; i < contours.size(); i++) {
+//						Scalar color = Scalar( 255, 0, 0);
+//						drawContours( drawing, contours, i, color, 1, 8, hierarchy, 0, Point() );
+//					}
+					for(unsigned int i=0; i < approx_contours.size(); i++) {
+						Scalar color;
+						if(approx_contours[i].size() == 4) {
+							color = Scalar( 255, 255, 255);
+							drawContours( drawing, approx_contours, i, color, 1, 8, NULL, 0, Point() );
+						}
+						else {
+							color = Scalar( 0, 255, 0);
+							drawContours( drawing, approx_contours, i, color, 1, 8, NULL, 0, Point() );
+						}
 					}
 					imshow("Video", drawing);
 				}
 			}
 			c = cvWaitKey(10); // wait 10 ms or for key stroke
 			if(c == 27)
+
 				break; // if ESC, break and quit
 		}
 		/* clean up */
