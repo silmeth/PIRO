@@ -32,9 +32,13 @@ typedef struct {
 
 
 /*
- * Wyświetla obraz z kamery.
+ * Wyświetla obraz bezpośredni z kamery.
  */
 void camera_raw_display(int num);
+/*
+ *
+ */
+void camera_straighten_display(int num, char* window_name);
 /*
  * Sortuje narożniki w kolejności: górny lewy, górny prawy, dolny prawy, dolny lewy
  */
@@ -42,6 +46,6 @@ void sortCorners(vector<Point2f>& corners, Point2f center);
 /*
  * Prostuje obraz
  */
-void straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols);
+bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols);
 
 #endif /* SHAPE_FINDER_H_ */

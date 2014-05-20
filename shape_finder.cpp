@@ -18,6 +18,34 @@ void camera_raw_display(int num) {
 	cvDestroyWindow("Video");
 }
 
+void camera_straighten_display(int num, char* window_name) {
+	int c;
+	IplImage* color_img;
+	CvCapture* cv_cap = cvCaptureFromCAM(num);
+	cvNamedWindow("Video", 0); // create window
+	for(;;) {
+		color_img = cvQueryFrame(cv_cap); // get frame
+		if(color_img != 0) {
+			Mat cam_mat(color_img);
+			Mat result;
+			cam_mat.copyTo(result);
+			if ( straighten(cam_mat, result, 450, 300) == true ) {
+				/// Apply blur
+					blur(result, result, Size(3,3));
+					/// Apply Canny to destination Matrix
+					Canny(result, result, 50, 50, 3);
+				imshow("Video", result); // show frame
+			}
+		}
+		c = cvWaitKey(10); // wait 10 ms or for key stroke
+		if(c == 27)
+			break; // if ESC, break and quit
+	}
+	/* clean up */
+	cvReleaseCapture( &cv_cap );
+	cvDestroyWindow("Video");
+}
+
 /*
  * Copied from http://opencv-code.com/tutorials/automatic-perspective-correction-for-quadrilateral-objects/
  */
@@ -25,7 +53,7 @@ void sortCorners(vector<Point2f>& corners, Point2f center) {
     vector<Point2f> top, bot;
 
     for ( unsigned int i = 0; i < corners.size(); i++ ) {
-        if (corners[i].y < center.y)
+        if (corners[i].y < center.y && top.size() < 2)
             top.push_back(corners[i]);
         else
             bot.push_back(corners[i]);
@@ -46,7 +74,7 @@ void sortCorners(vector<Point2f>& corners, Point2f center) {
 /*
  * Copied from http://opencv-code.com/tutorials/automatic-perspective-correction-for-quadrilateral-objects/
  */
-void straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
+bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 	vector<cv::Vec4i> slines;
 	vector<par_line> par_lines;
 	vector<par_line> borders;
@@ -56,6 +84,10 @@ void straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 	Canny(temp, temp, 100, 100, 3);
 	HoughLinesP(temp, slines, 1, CV_PI/360, 65, 80, 10);
 
+	if ( slines.size() < 4 ) {
+		///cout << "Hough: Znaleziono mniej niż 4 linie.";
+		return false;
+	}
 	for( unsigned int i = 0; i < slines.size(); i++ ) {
 		Vec4i l = slines[i];
 		par_line tmp_line;
@@ -92,6 +124,10 @@ void straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 			borders.push_back(par_lines[i]);
 		}
 	}
+	if ( borders.size() < 4 ) {
+		///cout << "Zbudowano mniej niż 3 boki obwiedni.";
+		return false;
+	}
 	/// Znajdź narożniki
 	std::vector<cv::Point2f> corners;
 	for (unsigned int i = 0; i < borders.size(); i++){
@@ -105,6 +141,9 @@ void straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 				corners.push_back(p);
 			}
 		}
+	}
+	if ( corners.size() < 4 ) {
+		return false;
 	}
 	/// Oblicz środek masy
 	Point2f center(0,0);
@@ -127,4 +166,5 @@ void straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 	Mat transmtx = getPerspectiveTransform(corners, quad_pts);
 	// Apply perspective transformation
 	warpPerspective(src, dst, transmtx, dst.size());
+	return true;
 }

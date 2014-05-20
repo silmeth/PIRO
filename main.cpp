@@ -46,13 +46,15 @@ int main(int argc, const char** argv) {
 	src = imread( "./img/benchmark.png" );
 	if( !src.data )
 	{ return -1; }
-	/// Convert the image to grayscale
-	cvtColor( src, src_gray, CV_BGR2GRAY );
-	/// Create a window
-	straighten(src_gray, dst, 450, 300);
-	init_tests(window_name, dst);
-	namedWindow( window_name, CV_WINDOW_AUTOSIZE );
-	test_hough();
+//	/// Convert the image to grayscale
+//	cvtColor( src, src_gray, CV_BGR2GRAY );
+//	/// Create a window
+//	straighten(src_gray, dst, 450, 300);
+//	init_tests(window_name, dst);
+//	namedWindow( window_name, CV_WINDOW_AUTOSIZE );
+//	test_hough();
+	///camera_raw_display(1);
+	camera_straighten_display(1, window_name);
 	waitKey(0);
 	return 0;
 }
