@@ -63,7 +63,7 @@ void straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 		tmp_line.b = l[1] - (double)(l[3]-l[1])/((double)(l[2]-l[0]))*l[0];
 		tmp_line.len = sqrt(pow( (double)(l[0]-l[2]), 2.0 ) + pow( (double)(l[1]-l[3]), 2.0 ));
 	    par_lines.push_back(tmp_line);
-	  }
+	  } // TODO: linie pionowe - wywalić dzielenie przez zero!
 
 	/// Uśrednione linie będące krawędziami kartki
 	/// Dla każdej linii znajdź taką, która mieści się w zakresie +- 10 stopni
