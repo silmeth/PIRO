@@ -1,5 +1,7 @@
 #include "shape_finder.h"
 
+vector <Point2f> corners_old;
+
 void camera_raw_display(int num) {
 	int c;
 	IplImage* color_img;
@@ -77,7 +79,7 @@ void camera_contours_display(int num) {
 					for(unsigned int i = 0; i < contours.size(); i++) {
 						if(contourArea(contours[i]) > 20 && hierarchy[i][3] == -1) {
 							vector<Point> tmp_contour;
-							approxPolyDP(Mat(contours[i]), tmp_contour, 5, true);
+							approxPolyDP(Mat(contours[i]), tmp_contour, 2, true);
 							approx_contours.push_back(tmp_contour);
 						}
 					}
@@ -143,6 +145,8 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 	vector<par_line> par_lines;
 	vector<par_line> borders;
 
+	bool corners_similarity = true;
+
 	Mat temp;
 	blur(src, temp, Size(3,3));
 	Canny(temp, temp, 100, 100, 3);
@@ -150,86 +154,122 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 
 	if ( slines.size() < 4 ) {
 		///cout << "Hough: Znaleziono mniej niż 4 linie.";
-		return false;
+		//return false;
+		corners_similarity = false;
 	}
-	for( unsigned int i = 0; i < slines.size(); i++ ) {
-		Vec4i l = slines[i];
-		par_line tmp_line;
-		tmp_line.atana = atan((double)(l[3]-l[1])/((double)(l[2]-l[0])));
-		tmp_line.b = l[1] - (double)(l[3]-l[1])/((double)(l[2]-l[0]))*l[0];
-		tmp_line.len = sqrt(pow( (double)(l[0]-l[2]), 2.0 ) + pow( (double)(l[1]-l[3]), 2.0 ));
-	    par_lines.push_back(tmp_line);
-	  } // TODO: linie pionowe - wywalić dzielenie przez zero!
+	else{
+		for( unsigned int i = 0; i < slines.size(); i++ ) {
+			Vec4i l = slines[i];
+			par_line tmp_line;
+			//Jeżeli są pionowe linie, rozwalające system
+			if( abs(l[2]-l[0]) < 3 ){
+				tmp_line.b = 1.e15;
+			}
+			else {
+				tmp_line.b = l[1] - (double)(l[3]-l[1])/((double)(l[2]-l[0]))*l[0];
+			}
+			tmp_line.atana = atan2((double)(l[3]-l[1]),(double)(l[2]-l[0]));
+			tmp_line.len = sqrt(pow( (double)(l[0]-l[2]), 2.0 ) + pow( (double)(l[1]-l[3]), 2.0 ));
+			par_lines.push_back(tmp_line);
+		  } // TODO: linie pionowe - wywalić dzielenie przez zero!
 
-	/// Uśrednione linie będące krawędziami kartki
-	/// Dla każdej linii znajdź taką, która mieści się w zakresie +- 10 stopni
-	/// Pierwsza linia trafia od razu
-	borders.push_back(par_lines[0]);
-	for( unsigned int i = 1; i < par_lines.size(); i++ ) {
-		bool found_similiar = false;
-		for ( unsigned int j = 0; j < borders.size(); j++ ) {
-			/// Nowy odcinek podobny do któregoś z istniejących
-			if ( abs(abs(par_lines[i].atana) - abs(borders[j].atana)) < 10.0*3.14159/180.0
-				&& abs(par_lines[i].b - borders[j].b) < 150.0 ) {
+		/// Uśrednione linie będące krawędziami kartki
+		/// Dla każdej linii znajdź taką, która mieści się w zakresie +- 10 stopni
+		/// Pierwsza linia trafia od razu
+		borders.push_back(par_lines[0]);
+		for( unsigned int i = 1; i < par_lines.size(); i++ ) {
+			bool found_similiar = false;
+			for ( unsigned int j = 0; j < borders.size(); j++ ) {
+				/// Nowy odcinek podobny do któregoś z istniejących
+				if ( abs(abs(par_lines[i].atana) - abs(borders[j].atana)) < 10.0*3.14159/180.0
+					&& abs(par_lines[i].b - borders[j].b) < 150.0 ) {
 				/// Nowa wartość jako średnia ważona
-				borders[j].atana = (borders[j].atana*borders[j].len
-									   + par_lines[i].atana*par_lines[i].len)
-									   / (borders[j].len + par_lines[i].len);
-				borders[j].b = (borders[j].b*borders[j].len
-													   + par_lines[i].b*par_lines[i].len)
-													   / (borders[j].len + par_lines[i].len);
-				/// Zapisz nową długość uśrednionej prostej
-				borders[j].len = borders[j].len + par_lines[i].len;
-				found_similiar = true;
+					borders[j].atana = (borders[j].atana*borders[j].len
+										   + par_lines[i].atana*par_lines[i].len)
+										   / (borders[j].len + par_lines[i].len);
+					borders[j].b = (borders[j].b*borders[j].len
+														   + par_lines[i].b*par_lines[i].len)
+														   / (borders[j].len + par_lines[i].len);
+					/// Zapisz nową długość uśrednionej prostej
+					borders[j].len = borders[j].len + par_lines[i].len;
+					found_similiar = true;
+				}
+			}
+			/// Jeżeli żaden element nie był podobny, dodaj nową krawędź
+			if ( !found_similiar ) {
+				borders.push_back(par_lines[i]);
 			}
 		}
-		/// Jeżeli żaden element nie był podobny, dodaj nową krawędź
-		if ( !found_similiar ) {
-			borders.push_back(par_lines[i]);
+		if ( borders.size() != 4 ) {
+			///cout << "Zbudowano mniej niż 3 boki obwiedni.";
+			//return false;
+			corners_similarity = false;
 		}
-	}
-	if ( borders.size() < 4 ) {
-		///cout << "Zbudowano mniej niż 3 boki obwiedni.";
-		return false;
-	}
-	/// Znajdź narożniki
-	std::vector<cv::Point2f> corners;
-	for (unsigned int i = 0; i < borders.size(); i++){
-		for (unsigned int j = i+1; j < borders.size(); j++){
-			/// Znajdź przecięcie między nierównoległymi do siebie brzegami kartki
-			if( abs(abs(borders[i].atana)-abs(borders[j].atana)) > 45.0*3.14159/180.0 ) {
-				Point2f p;
-				p.x = (borders[i].b - borders[j].b) /
-						((tan(borders[j].atana) - tan(borders[i].atana)));
-				p.y = p.x * tan(borders[i].atana) + borders[i].b;
-				corners.push_back(p);
+		else{
+			/// Znajdź narożniki
+			std::vector<Point2f> corners;
+			for (unsigned int i = 0; i < borders.size(); i++){
+				for (unsigned int j = i+1; j < borders.size(); j++){
+					/// Znajdź przecięcie między nierównoległymi do siebie brzegami kartki
+					if( abs(abs(borders[i].atana)-abs(borders[j].atana)) > 45.0*3.14159/180.0 ) {
+						Point2f p;
+						p.x = (borders[i].b - borders[j].b) /
+								((tan(borders[j].atana) - tan(borders[i].atana)));
+						p.y = p.x * tan(borders[i].atana) + borders[i].b;
+						corners.push_back(p);
+					}
+				}
+			}
+			if ( corners.size() != 4 ) {
+				//return false;
+				corners_similarity = false;
+			}
+			else {
+				/// Oblicz środek masy
+				if (corners.size() == 4)	{
+					Point2f center(0,0);
+					for ( unsigned int i = 0; i < corners.size(); i++ ) {
+						center += corners[i];
+					}
+					center *= (1. / corners.size());
+					/// Posortuj narożniki
+					sortCorners(corners, center);
+				}
+				/// Sprawdź różnicę w położeniu narożników
+				for(int i = 0; i<4; i++){
+					if(abs(corners[i].x - corners_old[i].x) > 50){
+						corners_similarity = false;
+						break;
+					}
+					else if(abs(corners[i].y - corners_old[i].y) > 50){
+						corners_similarity = false;
+						break;
+					}
+				}
+				/// Przepisz nowe narożniki jeżeli mocno się nie różnią
+				if(corners_similarity){
+					corners_old = corners;
+				}
 			}
 		}
 	}
-	if ( corners.size() < 4 ) {
+	if(corners_old.size() == 4){
+		// Apply perspective transformation
+		// Get transformation matrix
+		// Define the destination image
+		dst = Mat::zeros(cols, rows, CV_8UC3);
+		// Corners of the destination image
+		vector<Point2f> quad_pts;
+		quad_pts.push_back(Point2f(0, 0));
+		quad_pts.push_back(Point2f(dst.cols, 0));
+		quad_pts.push_back(Point2f(dst.cols, dst.rows));
+		quad_pts.push_back(Point2f(0, dst.rows));
+		Mat transmtx = getPerspectiveTransform(corners_old, quad_pts);
+		warpPerspective(src, dst, transmtx, dst.size());
+	}
+	else {
 		return false;
 	}
-	/// Oblicz środek masy
-	Point2f center(0,0);
-	for ( unsigned int i = 0; i < corners.size(); i++ ) {
-	    center += corners[i];
-	}
-	center *= (1. / corners.size());
-	/// Posortuj narożniki
-	sortCorners(corners, center);
-	// Define the destination image
-	dst = Mat::zeros(cols, rows, CV_8UC3);
-	// Corners of the destination image
-	vector<Point2f> quad_pts;
-	quad_pts.push_back(Point2f(0, 0));
-	quad_pts.push_back(Point2f(dst.cols, 0));
-	quad_pts.push_back(Point2f(dst.cols, dst.rows));
-	quad_pts.push_back(Point2f(0, dst.rows));
-
-	// Get transformation matrix
-	Mat transmtx = getPerspectiveTransform(corners, quad_pts);
-	// Apply perspective transformation
-	warpPerspective(src, dst, transmtx, dst.size());
 	return true;
 }
 
