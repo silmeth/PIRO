@@ -47,6 +47,8 @@ void test_hough_window(int, void*);
 /// CONTOURS
 void test_contours();
 void test_contours_window();
+/// EXPERIMENTAL
+void hough_video_notrackbar();
 
 
 #endif /* TESTS_H_ */

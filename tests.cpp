@@ -106,4 +106,34 @@ void test_contours() {
 	test_contours_window();
 }
 
-
+/// HOUGH for video input with no trackbar
+/// Create destination
+void hough_video_notrackbar(){
+	int c;
+	IplImage* color_img;
+	CvCapture* cv_cap = cvCaptureFromCAM(1);
+	cvNamedWindow("Video",0); // create window
+	for(;;) {
+		color_img = cvQueryFrame(cv_cap); // get frame
+		if(color_img != 0) {
+			Mat cam_mat(color_img);
+			cvtColor( cam_mat, cam_mat, CV_BGR2GRAY );
+			blur(cam_mat, cam_mat, Size(7,7));
+			Canny(cam_mat, cam_mat, 50, 50, 3);
+			///  !!!!!
+			int erosion_type = 2;
+			int erosion_size = 1;
+			Mat element = getStructuringElement( erosion_type,
+			                                       Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+			                                       Point( erosion_size, erosion_size ) );
+			dilate(cam_mat, cam_mat, element);
+			imshow("Video", cam_mat);
+		}
+		c = cvWaitKey(10); // wait 10 ms or for key stroke
+		if(c == 27)
+			break; // if ESC, break and quit
+	}
+	/* clean up */
+	cvReleaseCapture( &cv_cap );
+	cvDestroyWindow("Video");
+}

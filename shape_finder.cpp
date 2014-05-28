@@ -32,10 +32,6 @@ void camera_straighten_display(int num, char* window_name) {
 			Mat result;
 			cam_mat.copyTo(result);
 			if ( straighten(cam_mat, result, 450, 300) == true ) {
-				/// Apply blur
-				///	blur(result, result, Size(3,3));
-				///	/// Apply Canny to destination Matrix
-				///	Canny(result, result, 50, 50, 3);
 				imshow("Video", result); // show frame
 			}
 		}
@@ -69,7 +65,7 @@ void camera_contours_display(int num) {
 					vector<vector<Point> > contours; //contours of the paper sheet
 					vector<vector<Point> > approx_contours; //approx contours of the paper sheet
 					vector<Vec4i> hierarchy;
-					/// Cut 10 px from each side
+					/// Cut 20 px from each side to avoid paper borders detection
 					result = result(Rect(10, 10, result.cols-20, result.rows-20));
 					findContours( result, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0) );
 					/// Draw contours
@@ -77,6 +73,7 @@ void camera_contours_display(int num) {
 					/// https://github.com/Itseez/opencv/blob/master/samples/cpp/contours2.cpp
 //					approx_contours.resize(contours.size());
 					for(unsigned int i = 0; i < contours.size(); i++) {
+						/// Area of more than 20 and no parent
 						if(contourArea(contours[i]) > 20 && hierarchy[i][3] == -1) {
 							vector<Point> tmp_contour;
 							approxPolyDP(Mat(contours[i]), tmp_contour, 5, true);
@@ -146,6 +143,12 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 	Mat temp;
 	blur(src, temp, Size(5,5));
 	Canny(temp, temp, 100, 100, 3);
+	int erosion_type = 2;
+	int erosion_size = 1;
+	Mat element = getStructuringElement( erosion_type,
+										   Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+										   Point( erosion_size, erosion_size ) );
+	dilate(temp, temp, element);
 	HoughLinesP(temp, slines, 1, CV_PI/360, 65, 80, 10);
 
 	if ( slines.size() < 4 ) {
@@ -198,32 +201,37 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 		}
 		if ( borders.size() < 4 ) {
 			///cout << "Zbudowano mniej niż 3 boki obwiedni.";
-			return false;
+			new_corners = false;
 		}
-		/// Znajdź narożniki
-		for (unsigned int i = 0; i < borders.size(); i++){
-			for (unsigned int j = i+1; j < borders.size(); j++){
-				/// Znajdź przecięcie między nierównoległymi do siebie brzegami kartki
-				if( abs(abs(borders[i].atana)-abs(borders[j].atana)) > 45.0*3.14159/180.0 ) {
-					Point2f p;
-					p.x = (borders[i].b - borders[j].b) /
-							((tan(borders[j].atana) - tan(borders[i].atana)));
-					p.y = p.x * tan(borders[i].atana) + borders[i].b;
-					corners.push_back(p);
+		else{
+			/// Znajdź narożniki
+			for (unsigned int i = 0; i < borders.size(); i++){
+				for (unsigned int j = i+1; j < borders.size(); j++){
+					/// Znajdź przecięcie między nierównoległymi do siebie brzegami kartki
+					if( abs(abs(borders[i].atana)-abs(borders[j].atana)) > 45.0*3.14159/180.0 ) {
+						Point2f p;
+						p.x = (borders[i].b - borders[j].b) /
+								((tan(borders[j].atana) - tan(borders[i].atana)));
+						p.y = p.x * tan(borders[i].atana) + borders[i].b;
+						corners.push_back(p);
+					}
 				}
 			}
+			if ( corners.size() < 4 ) {
+				new_corners = false;
+			}
+			else {
+				/// Oblicz środek masy
+				Point2f center(0,0);
+				for ( unsigned int i = 0; i < corners.size(); i++ ) {
+					center += corners[i];
+				}
+				center *= (1. / corners.size());
+				/// Posortuj narożniki
+				sortCorners(corners, center);
+				new_corners = true;
+			}
 		}
-		if ( corners.size() < 4 ) {
-			return false;
-		}
-		/// Oblicz środek masy
-		Point2f center(0,0);
-		for ( unsigned int i = 0; i < corners.size(); i++ ) {
-			center += corners[i];
-		}
-		center *= (1. / corners.size());
-		/// Posortuj narożniki
-		sortCorners(corners, center);
 	}
 	/// Jeżeli to pierwszy przebieg, skopiuj narożniki
 	if( corners_old.size() == 0 ) {
