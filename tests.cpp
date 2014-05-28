@@ -118,7 +118,7 @@ void hough_video_notrackbar(){
 		if(color_img != 0) {
 			Mat cam_mat(color_img);
 			cvtColor( cam_mat, cam_mat, CV_BGR2GRAY );
-			blur(cam_mat, cam_mat, Size(7,7));
+			blur(cam_mat, cam_mat, Size(5,5));
 			Canny(cam_mat, cam_mat, 50, 50, 3);
 			///  !!!!!
 			int erosion_type = 2;
@@ -127,7 +127,15 @@ void hough_video_notrackbar(){
 			                                       Size( 2*erosion_size + 1, 2*erosion_size+1 ),
 			                                       Point( erosion_size, erosion_size ) );
 			dilate(cam_mat, cam_mat, element);
-			imshow("Video", cam_mat);
+			vector<Vec4i> lines;
+			HoughLinesP(cam_mat, lines, 1, CV_PI/180, 120,100, 10);
+			/// Print found lines on temp
+			Mat drawing = Mat::zeros( cam_mat.size(), CV_8UC3 );
+			for( size_t i = 0; i < lines.size(); i++ ) {
+			    Vec4i l = lines[i];
+			    line( drawing, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, CV_AA);
+			}
+			imshow("Video", drawing);
 		}
 		c = cvWaitKey(10); // wait 10 ms or for key stroke
 		if(c == 27)

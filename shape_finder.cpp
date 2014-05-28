@@ -142,14 +142,14 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 
 	Mat temp;
 	blur(src, temp, Size(5,5));
-	Canny(temp, temp, 100, 100, 3);
+	Canny(temp, temp, 50, 50, 3);
 	int erosion_type = 2;
 	int erosion_size = 1;
 	Mat element = getStructuringElement( erosion_type,
 										   Size( 2*erosion_size + 1, 2*erosion_size+1 ),
 										   Point( erosion_size, erosion_size ) );
 	dilate(temp, temp, element);
-	HoughLinesP(temp, slines, 1, CV_PI/360, 65, 80, 10);
+	HoughLinesP(temp, slines, 1, CV_PI/360, 120,100, 10);
 
 	if ( slines.size() < 4 ) {
 		///cout << "Hough: Znaleziono mniej niż 4 linie.";
