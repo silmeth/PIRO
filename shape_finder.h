@@ -30,6 +30,7 @@ typedef struct {
 	double len;
 } par_line;
 
+extern vector<Point2f> corners_old;
 
 /*
  * Wyświetla obraz bezpośredni z kamery.
