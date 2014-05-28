@@ -238,7 +238,20 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 		corners_old = corners;
 	}
 	if( new_corners ) {
-		corners_old = corners;
+		bool close_corner_found [4];
+		for( int i = 0; i < 4; i++ ) {
+			close_corner_found[i] = false;
+			Point2f c = corners_old[i];
+			for( int j = 0; j < 4; j++ ) {
+				Point2f k = corners[j];
+				if( abs(k.y - c.y) < 100 && abs(k.x - c.x) < 100 ) {
+					close_corner_found[i] = true;
+				}
+			}
+		}
+		if ( close_corner_found[0] && close_corner_found[1] && close_corner_found[2] && close_corner_found[3] ) {
+			corners_old = corners;
+		}
 	}
 	if( corners_old.size() == 4 ) {
 		// Define the destination image
