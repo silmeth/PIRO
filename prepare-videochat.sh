@@ -108,7 +108,7 @@ ADB_FLAGS=
 #ADB_FLAGS="$ADB_FLAGS -s deviceid" # use when you need to pick from several devices (check deviceid in 'adb devices')
 
 # IP used by the phone in your wireless network
-WIFI_IP=192.168.2.115
+WIFI_IP=192.168.2.15
 
 # Port on which IP Webcam is listening
 PORT=8080

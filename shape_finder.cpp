@@ -155,8 +155,15 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 	for( unsigned int i = 0; i < slines.size(); i++ ) {
 		Vec4i l = slines[i];
 		par_line tmp_line;
-		tmp_line.atana = atan((double)(l[3]-l[1])/((double)(l[2]-l[0])));
-		tmp_line.b = l[1] - (double)(l[3]-l[1])/((double)(l[2]-l[0]))*l[0];
+		/// Pionowa linia - b na dużą wartość
+		if( abs(l[2]-l[0]) < 2 ){
+			// TODO znak powinien zależeć od atana
+			tmp_line.b = 1.e15;
+		}
+		else {
+			tmp_line.b = l[1] - (double)(l[3]-l[1])/((double)(l[2]-l[0]))*l[0];
+		}
+		tmp_line.atana = atan2((double)(l[3]-l[1]),((double)(l[2]-l[0])));
 		tmp_line.len = sqrt(pow( (double)(l[0]-l[2]), 2.0 ) + pow( (double)(l[1]-l[3]), 2.0 ));
 	    par_lines.push_back(tmp_line);
 	  } // TODO: linie pionowe - wywalić dzielenie przez zero!
