@@ -1,6 +1,7 @@
 #include "shape_finder.h"
 
 vector<Point2f> corners_old;
+int refresh_corners = 0;
 
 void camera_raw_display(int num) {
 	int c;
@@ -237,20 +238,29 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 	if( corners_old.size() == 0 ) {
 		corners_old = corners;
 	}
+	/// Jeżeli są nowe narożniki
 	if( new_corners ) {
-		bool close_corner_found [4];
-		for( int i = 0; i < 4; i++ ) {
-			close_corner_found[i] = false;
-			Point2f c = corners_old[i];
-			for( int j = 0; j < 4; j++ ) {
-				Point2f k = corners[j];
-				if( abs(k.y - c.y) < 100 && abs(k.x - c.x) < 100 ) {
-					close_corner_found[i] = true;
+		/// Co 20 klatkę odświeżaj narożniki, aby uniknąć przekrzywienia po obrocie i powrocie
+		if( refresh_corners > 20 ){
+			corners_old = corners;
+			refresh_corners = 0;
+		}
+		else {
+			refresh_corners += 1;
+			bool close_corner_found [4];
+			for( int i = 0; i < 4; i++ ) {
+				close_corner_found[i] = false;
+				Point2f c = corners_old[i];
+				for( int j = 0; j < 4; j++ ) {
+					Point2f k = corners[j];
+					if( abs(k.y - c.y) < 150 && abs(k.x - c.x) < 150 ) {
+						close_corner_found[i] = true;
+					}
 				}
 			}
-		}
-		if ( close_corner_found[0] && close_corner_found[1] && close_corner_found[2] && close_corner_found[3] ) {
-			corners_old = corners;
+			if ( close_corner_found[0] && close_corner_found[1] && close_corner_found[2] && close_corner_found[3] ) {
+				corners_old = corners;
+			}
 		}
 	}
 	if( corners_old.size() == 4 ) {

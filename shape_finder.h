@@ -32,6 +32,8 @@ typedef struct {
 
 extern vector<Point2f> corners_old;
 
+extern int refresh_corners;
+
 /*
  * Wyświetla obraz bezpośredni z kamery.
  */
