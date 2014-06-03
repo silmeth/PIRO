@@ -8,9 +8,6 @@
 #ifndef STRAIGHTENER_H_
 #define STRAIGHTENER_H_
 
-#define PI 3.14159
-#define INF 1.e50
-
 #include <vector>
 using namespace std;
 
@@ -20,11 +17,8 @@ using namespace std;
 #include "opencv2/contrib/contrib.hpp"
 using namespace cv;
 
-typedef struct {
-	double atana; // arc tangent a
-	double b; // parameter b
-	double len;
-} par_line;
+#include "mat_consts.h"
+#include "typedefs.h"
 
 class Straightener {
 	vector<Point2f> corners_old;
