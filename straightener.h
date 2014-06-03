@@ -35,7 +35,7 @@ public:
 	Mat getTransMatrix();
 	bool findCorners(const Mat & src);
 	bool findTransMatrix(const Mat & src, unsigned int rows,
-			unsigned int cols, bool newCorners = 1);
+			unsigned int cols, bool newCorners = true);
 	bool doAll(const Mat & src, Mat & dst, unsigned int rows,
 										unsigned int cols);
 	bool straightenImage(const Mat & src, Mat & dst, unsigned int rows,

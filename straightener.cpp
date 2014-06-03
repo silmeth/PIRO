@@ -204,7 +204,7 @@ bool Straightener::findCorners(const Mat & src) {
 }
 
 bool Straightener::findTransMatrix(const Mat & src, unsigned int rows,
-									unsigned int cols, bool newCorners = true) {
+									unsigned int cols, bool newCorners) {
 	vector<Point2f> quad_pts;
 	vector<Point2f> corners_old2f;
 
@@ -229,7 +229,7 @@ bool Straightener::findTransMatrix(const Mat & src, unsigned int rows,
 bool Straightener::doAll(const Mat & src, Mat & dst, unsigned int rows,
 									unsigned int cols) {
 	if(findTransMatrix(src, rows, cols, true)) {
-		dst = Mat::zeros(cols, rows, CV_8UC3);
+		dst = Mat::zeros(rows, cols, CV_8UC3);
 		warpPerspective(src, dst, trans_mat, dst.size());
 		return true;
 	}
@@ -239,7 +239,7 @@ bool Straightener::doAll(const Mat & src, Mat & dst, unsigned int rows,
 bool Straightener::straightenImage(const Mat & src, Mat & dst, unsigned int rows,
 									unsigned int cols) {
 	if(findTransMatrix(src, rows, cols, false)) {
-		dst = Mat::zeros(cols, rows, CV_8UC3);
+		dst = Mat::zeros(rows, cols, CV_8UC3);
 		warpPerspective(src, dst, trans_mat, dst.size());
 		return true;
 	}

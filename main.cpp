@@ -24,7 +24,7 @@ int main(int argc, const char** argv) {
 			Mat res;
 			preproc.getPage(cam_mat);
 			straight.setCorners(preproc.avg_corners);
-			straight.straightenImage(cam_mat, res, 423, 300);
+			straight.straightenImage(cam_mat, res, 300, 423);
 			imshow("Video", res);
 			c = cvWaitKey(10); // wait 10 ms or for key stroke
 			if(c == 27) {
