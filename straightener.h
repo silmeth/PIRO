@@ -31,6 +31,7 @@ public:
 	Straightener(const Mat & src);
 	Straightener();
 	vector<Point2f> getCorners();
+	void setCorners(const vector<Point2f> & new_corners);
 	Mat getTransMatrix();
 	bool findCorners(const Mat & src);
 	bool findTransMatrix(const Mat & src, unsigned int rows, unsigned int cols);

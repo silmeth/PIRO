@@ -49,6 +49,12 @@ vector<Point2f> Straightener::getCorners() {
 	return corners_old;
 }
 
+void Straightener::setCorners(const vector<Point2f> & new_corners) {
+	corners = new_corners;
+	sortCorners();
+	corners_old = corners;
+}
+
 Mat Straightener::getTransMatrix() {
 	return trans_mat;
 }
