@@ -36,9 +36,9 @@ public:
 	bool findCorners(const Mat & src);
 	bool findTransMatrix(const Mat & src, unsigned int rows,
 			unsigned int cols, bool newCorners = 1);
-	bool Straightener::doAll(const Mat & src, Mat & dst, unsigned int rows,
+	bool doAll(const Mat & src, Mat & dst, unsigned int rows,
 										unsigned int cols);
-	bool Straightener::straightenImage(const Mat & src, Mat & dst, unsigned int rows,
+	bool straightenImage(const Mat & src, Mat & dst, unsigned int rows,
 										unsigned int cols);
 };
 
