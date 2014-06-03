@@ -204,21 +204,33 @@ bool Straightener::findCorners(const Mat & src) {
 }
 
 bool Straightener::findTransMatrix(const Mat & src, unsigned int rows,
-									unsigned int cols) {
+									unsigned int cols, bool newCorners = true) {
 	vector<Point2f> quad_pts;
 	vector<Point2f> corners_old2f;
 
-	if(findCorners(src)) {
-		// Corners of the destination image
-		quad_pts.push_back(Point2f(0, 0));
-		quad_pts.push_back(Point2f(cols, 0));
-		quad_pts.push_back(Point2f(cols, rows));
-		quad_pts.push_back(Point2f(0, rows));
-
-		for(int i=0; i<4; i++){
-			corners_old2f.push_back(Point2f(corners_old[i].x, corners_old[i].y));
+	if(newCorners) {
+		if(!findCorners(src)) {
+			return false;
 		}
-		trans_mat = getPerspectiveTransform(corners_old2f, quad_pts);
+	}
+	// Corners of the destination image
+	quad_pts.push_back(Point2f(0, 0));
+	quad_pts.push_back(Point2f(cols, 0));
+	quad_pts.push_back(Point2f(cols, rows));
+	quad_pts.push_back(Point2f(0, rows));
+
+	for(int i=0; i<4; i++){
+		corners_old2f.push_back(Point2f(corners_old[i].x, corners_old[i].y));
+	}
+	trans_mat = getPerspectiveTransform(corners_old2f, quad_pts);
+	return true;
+}
+
+bool Straightener::doAll(const Mat & src, Mat & dst, unsigned int rows,
+									unsigned int cols) {
+	if(findTransMatrix(src, rows, cols, true)) {
+		dst = Mat::zeros(cols, rows, CV_8UC3);
+		warpPerspective(src, dst, trans_mat, dst.size());
 		return true;
 	}
 	return false;
@@ -226,7 +238,7 @@ bool Straightener::findTransMatrix(const Mat & src, unsigned int rows,
 
 bool Straightener::straightenImage(const Mat & src, Mat & dst, unsigned int rows,
 									unsigned int cols) {
-	if(findTransMatrix(src, rows, cols)) {
+	if(findTransMatrix(src, rows, cols, false)) {
 		dst = Mat::zeros(cols, rows, CV_8UC3);
 		warpPerspective(src, dst, trans_mat, dst.size());
 		return true;
