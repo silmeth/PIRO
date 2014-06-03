@@ -42,6 +42,9 @@ char window_name[] = "Edge Map";
 
 
 int main(int argc, const char** argv) {
+
+	Straightener straight;
+
 	/// Load an image
 	src = imread( "./img/benchmark.png" );
 	if( !src.data )
@@ -54,10 +57,10 @@ int main(int argc, const char** argv) {
 //	namedWindow( window_name, CV_WINDOW_AUTOSIZE );
 //	test_hough();
 	///camera_raw_display(1);
-	///camera_straighten_display(1, window_name);
-//	camera_contours_display(1);
+//	camera_straighten_display(1, window_name);
+	camera_contours_display(1, straight);
 //	hough_video_notrackbar();
-	camera_HUE_display(1);
+//	camera_HUE_display(1);
 	waitKey(0);
 	return 0;
 }
