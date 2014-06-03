@@ -128,12 +128,12 @@ void hough_video_notrackbar(){
 			                                       Point( erosion_size, erosion_size ) );
 			dilate(cam_mat, cam_mat, element);
 			vector<Vec4i> lines;
-			HoughLinesP(cam_mat, lines, 1, CV_PI/180, 120,100, 10);
+			HoughLinesP(cam_mat, lines, 1, CV_PI/180, 150,120, 10);
 			/// Print found lines on temp
 			Mat drawing = Mat::zeros( cam_mat.size(), CV_8UC3 );
 			for( size_t i = 0; i < lines.size(); i++ ) {
 			    Vec4i l = lines[i];
-			    line( drawing, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, CV_AA);
+			    line( drawing, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,i*20), 3, CV_AA);
 			}
 			imshow("Video", drawing);
 		}

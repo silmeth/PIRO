@@ -56,7 +56,10 @@ int main(int argc, const char** argv) {
 	///camera_raw_display(1);
 	///camera_straighten_display(1, window_name);
 	camera_contours_display(1);
-	//hough_video_notrackbar();
+//	hough_video_notrackbar();
 	waitKey(0);
 	return 0;
 }
+
+// TODO rysowanie linii po złączeniu houghem
+// TODO progowanie z histogramu

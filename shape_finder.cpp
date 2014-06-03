@@ -66,6 +66,12 @@ void camera_contours_display(int num) {
 					vector<vector<Point> > contours; //contours of the paper sheet
 					vector<vector<Point> > approx_contours; //approx contours of the paper sheet
 					vector<Vec4i> hierarchy;
+					int erosion_type = 2;
+					int erosion_size = 3;
+					Mat element = getStructuringElement( erosion_type,
+														   Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+														   Point( erosion_size, erosion_size ) );
+					dilate(result, result, element);
 					/// Cut 20 px from each side to avoid paper borders detection
 					result = result(Rect(10, 10, result.cols-20, result.rows-20));
 					findContours( result, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0) );
@@ -77,7 +83,7 @@ void camera_contours_display(int num) {
 						/// Area of more than 20 and no parent
 						if(contourArea(contours[i]) > 20 && hierarchy[i][3] == -1) {
 							vector<Point> tmp_contour;
-							approxPolyDP(Mat(contours[i]), tmp_contour, 5, true);
+							approxPolyDP(Mat(contours[i]), tmp_contour, 3, true);
 							approx_contours.push_back(tmp_contour);
 						}
 					}
@@ -143,8 +149,8 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 
 	Mat temp;
 	blur(src, temp, Size(5,5));
-	Canny(temp, temp, 50, 50, 3);
-	int erosion_type = 2;
+	Canny(temp, temp, 100, 100, 3);
+	int erosion_type = 1;
 	int erosion_size = 1;
 	Mat element = getStructuringElement( erosion_type,
 										   Size( 2*erosion_size + 1, 2*erosion_size+1 ),
@@ -161,9 +167,9 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 			Vec4i l = slines[i];
 			par_line tmp_line;
 			/// Pionowa linia - b na dużą wartość
-			if( abs(l[2]-l[0]) < 2 ){
-				// TODO znak powinien zależeć od atana
-				tmp_line.b = 1.e15;
+			if( abs(l[2]-l[0]) == 0 ){
+				// znak (chyba) OK
+				tmp_line.b = -(l[3]-l[1])/abs(l[3]-l[1])*1.e15;
 			}
 			else {
 				tmp_line.b = l[1] - (double)(l[3]-l[1])/((double)(l[2]-l[0]))*l[0];
@@ -204,7 +210,19 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 			///cout << "Zbudowano mniej niż 3 boki obwiedni.";
 			new_corners = false;
 		}
-		else{
+		else {
+			// usuwanie najkrótszych linii
+			while(borders.size() > 4) {
+				unsigned char i = 0;
+				double minlen = 1.e30; // nieskończoność
+				for(unsigned char j = 0; j < borders.size(); j++) {
+					if(borders[i].len > borders[j].len) {
+						i = j;
+						minlen = borders[j].len;
+					}
+				}
+				borders.erase(borders.begin()+i);
+			}
 			/// Znajdź narożniki
 			for (unsigned int i = 0; i < borders.size(); i++){
 				for (unsigned int j = i+1; j < borders.size(); j++){
@@ -253,7 +271,7 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 				Point2f c = corners_old[i];
 				for( int j = 0; j < 4; j++ ) {
 					Point2f k = corners[j];
-					if( abs(k.y - c.y) < 150 && abs(k.x - c.x) < 150 ) {
+					if( abs(k.y - c.y) < 100 && abs(k.x - c.x) < 100 ) {
 						close_corner_found[i] = true;
 					}
 				}
@@ -281,5 +299,4 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 		return false;
 	}
 }
-
 
