@@ -21,6 +21,38 @@ void camera_raw_display(int num) {
 	cvDestroyWindow("Video");
 }
 
+void camera_HUE_display(int num) {
+	int c;
+	IplImage* color_img;
+	CvCapture* cv_cap = cvCaptureFromCAM(num);
+	cvNamedWindow("Video", 0); // create window
+	for(;;) {
+		color_img = cvQueryFrame(cv_cap); // get frame
+		if(color_img != 0) {
+			Mat cam_mat(color_img);
+			Mat frameBGR;
+			cam_mat.copyTo(frameBGR);
+			Mat frameHSV;
+			cvtColor(frameBGR, frameHSV, CV_BGR2HSV);
+			Mat Hue = Mat(frameHSV.rows, frameHSV.cols, CV_8UC1);
+			//Hue.create(frameHSV.size(), frameHSV.depth());
+			int ch[] = { 1, 0 };
+			mixChannels( &frameHSV, 1, &Hue, 1, ch, 1 );
+			imshow("Video", Hue);
+			c = cvWaitKey(10); // wait 10 ms or for key stroke
+			if(c == 27) {
+				break; // if ESC, break and quit
+			}
+		}
+		c = cvWaitKey(10); // wait 10 ms or for key stroke
+		if(c == 27)
+			break; // if ESC, break and quit
+	}
+	/* clean up */
+	cvReleaseCapture( &cv_cap );
+	cvDestroyWindow("Video");
+}
+
 void camera_straighten_display(int num, char* window_name) {
 	int c;
 	IplImage* color_img;

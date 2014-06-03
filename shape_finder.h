@@ -39,6 +39,10 @@ extern int refresh_corners;
  */
 void camera_raw_display(int num);
 /*
+ * Wyświetla Hue z HSV
+ */
+void camera_HUE_display(int num);
+/*
  *
  */
 void camera_straighten_display(int num, char* window_name);
