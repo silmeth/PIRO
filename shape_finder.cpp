@@ -64,7 +64,10 @@ void camera_straighten_display(int num, char* window_name) {
 			Mat cam_mat(color_img);
 			Mat result;
 			cam_mat.copyTo(result);
-			if ( straighten(cam_mat, result, 450, 300) == true ) {
+
+			Straightener straight(cam_mat);
+
+			if(straight.straightenImage(cam_mat, result, 450, 300)) {
 				imshow("Video", result); // show frame
 			}
 		}
@@ -77,7 +80,7 @@ void camera_straighten_display(int num, char* window_name) {
 	cvDestroyWindow("Video");
 }
 
-void camera_contours_display(int num) {
+void camera_contours_display(int num, Straightener & straight) {
 	int c;
 		IplImage* color_img;
 		CvCapture* cv_cap = cvCaptureFromCAM(num);
@@ -89,7 +92,8 @@ void camera_contours_display(int num) {
 				Mat cam_mat(color_img);
 				Mat result;
 				cam_mat.copyTo(result);
-				if (straighten(cam_mat, result, 423, 300) == true ) {
+
+				if (straight.straightenImage(cam_mat, result, 423, 300)) {
 					///Apply blur
 					blur(result, result, Size(3,3));
 					///Apply Canny to destination Matrix
@@ -172,6 +176,33 @@ void sortCorners(vector<Point2f>& corners, Point2f center) {
  * Copied from http://opencv-code.com/tutorials/automatic-perspective-correction-for-quadrilateral-objects/
  */
 bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
+	vector<cv::Vec4i> slines;
+	vector<par_line> par_lines;
+	vector<par_line> borders;
+	bool new_corners = false;
+	vector<Point2f> corners = find_corners(src, rows, cols);
+	vector<Point2f> quad_pts;
+
+	if( corners.size() == 4 ) {
+		// Define the destination image
+		dst = Mat::zeros(cols, rows, CV_8UC3);
+		// Corners of the destination image
+		quad_pts.push_back(Point2f(0, 0));
+		quad_pts.push_back(Point2f(dst.cols, 0));
+		quad_pts.push_back(Point2f(dst.cols, dst.rows));
+		quad_pts.push_back(Point2f(0, dst.rows));
+		// Get transformation matrix
+		Mat transmtx = getPerspectiveTransform(corners, quad_pts);
+		// Apply perspective transformation
+		warpPerspective(src, dst, transmtx, dst.size());
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+vector<Point2f> find_corners(Mat &src, unsigned int rows, unsigned int cols) {
 	vector<cv::Vec4i> slines;
 	vector<par_line> par_lines;
 	vector<par_line> borders;
@@ -314,21 +345,12 @@ bool straighten(Mat &src, Mat &dst, unsigned int rows, unsigned int cols) {
 		}
 	}
 	if( corners_old.size() == 4 ) {
-		// Define the destination image
-		dst = Mat::zeros(cols, rows, CV_8UC3);
-		// Corners of the destination image
-		quad_pts.push_back(Point2f(0, 0));
-		quad_pts.push_back(Point2f(dst.cols, 0));
-		quad_pts.push_back(Point2f(dst.cols, dst.rows));
-		quad_pts.push_back(Point2f(0, dst.rows));
-		// Get transformation matrix
-		Mat transmtx = getPerspectiveTransform(corners_old, quad_pts);
-		// Apply perspective transformation
-		warpPerspective(src, dst, transmtx, dst.size());
-		return true;
+		return corners_old;
 	}
 	else {
-		return false;
+		vector<Point2f> empty;
+		empty.clear();
+		return empty;
 	}
 }
 
