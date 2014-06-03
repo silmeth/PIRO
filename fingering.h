@@ -10,7 +10,8 @@
 
 #include "straightener.h"
 
-Mat find_finger(int num, const Mat & trans_mat, const Mat & image);
+Mat find_finger(int num, const Mat & trans_mat, const Mat & image,
+		unsigned int rows, unsigned int cols);
 
 
 

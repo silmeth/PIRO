@@ -7,11 +7,12 @@
 
 #include "fingering.h"
 
-Mat find_finger(int num, const Mat & trans_mat, const Mat & image) {
+Mat find_finger(int num, const Mat & trans_mat, const Mat & image,
+		unsigned int rows, unsigned int cols) {
 	vector<Point2f> corners;
 	Mat cam_mat = image;
-	Mat result;
-	cam_mat.copyTo(result);
+	Mat result = Mat::zeros(rows, cols, CV_8UC3);
+
 	warpPerspective(cam_mat, result, trans_mat, result.size());
 
 	/// Convert result to HSV
