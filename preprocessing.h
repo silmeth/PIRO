@@ -12,6 +12,8 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/contrib/contrib.hpp"
 
+#include "straightener.h"
+
 using namespace std;
 using namespace cv;
 
@@ -22,11 +24,11 @@ public:
 	Mat * getFinger(const Mat & src);
 	Mat * getShapes(const Mat & src);
 	void addNewCorners(vector<Point>);
-	void getAvgCorners();
-private:
-	vector<vector<Point> > last_corners;
+	void avgCorners();
 	vector<Point> avg_corners;
-
+private:
+	Straightener straight;
+	vector<vector<Point> > last_corners;
 };
 
 

@@ -21,8 +21,8 @@ using namespace cv;
 #include "typedefs.h"
 
 class Straightener {
-	vector<Point2f> corners_old;
-	vector<Point2f> corners;
+	vector<Point> corners_old;
+	vector<Point> corners;
 	unsigned int refresh_corners;
 	Mat trans_mat;
 	void sortCorners();
@@ -30,8 +30,8 @@ class Straightener {
 public:
 	Straightener(const Mat & src);
 	Straightener();
-	vector<Point2f> getCorners();
-	void setCorners(const vector<Point2f> & new_corners);
+	vector<Point> getCorners();
+	void setCorners(const vector<Point> & new_corners);
 	Mat getTransMatrix();
 	bool findCorners(const Mat & src);
 	bool findTransMatrix(const Mat & src, unsigned int rows, unsigned int cols);

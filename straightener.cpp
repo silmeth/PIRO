@@ -13,21 +13,27 @@ void Straightener::sortCorners() {
 	/// Find center of mass
 	Point2f center(0,0);
 	for ( unsigned int i = 0; i < corners.size(); i++ ) {
-		center += corners[i];
+		center += Point2f(corners[i].x, corners[i].y);
 	}
 	center *= (1. / corners.size());
 
+	int num_top = -1;
+	int num_bot = -1;
+	int num_corners = -1;
     for (unsigned int i = 0; i < corners.size(); i++) {
-        if (corners[i].y < center.y && top.size() < 2)
+        if ((float)(corners[i].y) <= center.y && top.size() < 2)
             top.push_back(corners[i]);
         else
             bot.push_back(corners[i]);
     }
+    num_top = top.size();
+    num_bot = bot.size();
+    num_corners = corners.size();
 
-    Point2f tl = top[0].x > top[1].x ? top[1] : top[0];
-    Point2f tr = top[0].x > top[1].x ? top[0] : top[1];
-    Point2f bl = bot[0].x > bot[1].x ? bot[1] : bot[0];
-    Point2f br = bot[0].x > bot[1].x ? bot[0] : bot[1];
+    Point tl = top[0].x > top[1].x ? top[1] : top[0];
+    Point tr = top[0].x > top[1].x ? top[0] : top[1];
+    Point bl = bot[0].x > bot[1].x ? bot[1] : bot[0];
+    Point br = bot[0].x > bot[1].x ? bot[0] : bot[1];
 
     corners.clear();
     corners.push_back(tl);
@@ -45,11 +51,11 @@ Straightener::Straightener() {
 	refresh_corners = 0;
 }
 
-vector<Point2f> Straightener::getCorners() {
+vector<Point> Straightener::getCorners() {
 	return corners_old;
 }
 
-void Straightener::setCorners(const vector<Point2f> & new_corners) {
+void Straightener::setCorners(const vector<Point> & new_corners) {
 	corners = new_corners;
 	sortCorners();
 	corners_old = corners;
@@ -141,7 +147,7 @@ bool Straightener::findCorners(const Mat & src) {
 				for (unsigned int j = i+1; j < borders.size(); j++){
 					/// Find intersection between perpendicular edges of paper-sheet
 					if(abs(abs(borders[i].atana)-abs(borders[j].atana)) > 45.0*PI/180.0 ) {
-						Point2f p;
+						Point p;
 						p.x = (borders[i].b - borders[j].b) /
 								((tan(borders[j].atana) - tan(borders[i].atana)));
 						p.y = p.x * tan(borders[i].atana) + borders[i].b;
@@ -175,9 +181,9 @@ bool Straightener::findCorners(const Mat & src) {
 			bool close_corner_found [4];
 			for(int i = 0; i < 4; i++) {
 				close_corner_found[i] = false;
-				Point2f c = corners_old[i];
+				Point c = corners_old[i];
 				for( int j = 0; j < 4; j++ ) {
-					Point2f k = corners[j];
+					Point k = corners[j];
 					if(abs(k.y - c.y) < 100 && abs(k.x - c.x) < 100) {
 						close_corner_found[i] = true;
 					}
@@ -200,6 +206,8 @@ bool Straightener::findCorners(const Mat & src) {
 bool Straightener::findTransMatrix(const Mat & src, unsigned int rows,
 									unsigned int cols) {
 	vector<Point2f> quad_pts;
+	vector<Point2f> corners_old2f;
+
 	if(findCorners(src)) {
 		// Corners of the destination image
 		quad_pts.push_back(Point2f(0, 0));
@@ -207,7 +215,10 @@ bool Straightener::findTransMatrix(const Mat & src, unsigned int rows,
 		quad_pts.push_back(Point2f(cols, rows));
 		quad_pts.push_back(Point2f(0, rows));
 
-		trans_mat = getPerspectiveTransform(corners_old, quad_pts);
+		for(int i=0; i<4; i++){
+			corners_old2f.push_back(Point2f(corners_old[i].x, corners_old[i].y));
+		}
+		trans_mat = getPerspectiveTransform(corners_old2f, quad_pts);
 		return true;
 	}
 	return false;
