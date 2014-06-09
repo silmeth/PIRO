@@ -39,6 +39,10 @@ Mat Preprocessing:: getPage(const Mat & src){
 	// Apply adaptive thresholding
 	adaptiveThreshold(Sat, Sat, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 71, 30);
 
+	Mat temp3;
+	Sat.copyTo(temp3);
+	imshow("VIDEO", temp3);
+
 	// Dilation
 	int erosion_type = 2;
 	int erosion_size = 1;
@@ -123,7 +127,7 @@ Mat Preprocessing:: getPage(const Mat & src){
 	for (int k = 0; k < 4; k++){
 		circle(drawing, avg_corners[k], 7, color, 3);
 	}
-	return drawing;
+	//return drawing;
 }
 
 void Preprocessing:: avgCorners(){

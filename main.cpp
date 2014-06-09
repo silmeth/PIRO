@@ -27,15 +27,18 @@ int main(int argc, const char** argv) {
                         //straight.doAll(cam_mat, res, 250, 400);
                         preproc.getPage(cam_mat);
                         straight.setCorners(preproc.avg_corners);
-                        straight.straightenImage(cam_mat, res, 480, 640);
-                        Mat trans_mat = straight.getTransMatrix();
+                        if(straight.straightenImage(cam_mat, res, 480, 640)) {
+							Mat trans_mat = straight.getTransMatrix();
 
-                        finger = find_finger(1, trans_mat, cam_mat, 480,640);
+							finger = find_finger(1, trans_mat, cam_mat, 480,640);
 
-                        imshow("Video", finger);
-                        c = cvWaitKey(10); // wait 10 ms or for key stroke
-                        if(c == 27) {
-                                break; // if ESC, break and quit
+							finger = max(finger, res);
+
+							//imshow("Video", finger);
+							c = cvWaitKey(10); // wait 10 ms or for key stroke
+							if(c == 27) {
+									break; // if ESC, break and quit
+							}
                         }
                 }
                 c = cvWaitKey(10); // wait 10 ms or for key stroke

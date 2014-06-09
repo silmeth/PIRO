@@ -33,6 +33,7 @@ Mat find_finger(int num, const Mat & trans_mat, const Mat & image,
 
 	hue = min(max(dst1, dst2), dst3);
 
+	cvtColor(hue, hue, CV_GRAY2BGR);
 	return hue;
 }
 
