@@ -20,9 +20,9 @@ using namespace cv;
 class Preprocessing{
 public:
 	Preprocessing(void);
-	Mat getPage(const Mat & src);
+	vector<Point> getCorners(const Mat & src);
 	Mat * getFinger(const Mat & src);
-	Mat * getShapes(const Mat & src);
+	vector<vector<Point> > getShapes(const Mat & src);
 	void addNewCorners(vector<Point>);
 	void avgCorners();
 	vector<Point> avg_corners;

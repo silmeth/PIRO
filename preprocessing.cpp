@@ -27,7 +27,7 @@ Preprocessing:: Preprocessing(void){
  * src - BGR Mat
  * returns 1 for page, 0 for surrounding
  */
-Mat Preprocessing:: getPage(const Mat & src){
+vector<Point> Preprocessing:: getCorners(const Mat & src){
 	Mat frameHSV;
 	cvtColor(src, frameHSV, CV_BGR2HSV);
 	Mat Sat = Mat(frameHSV.rows, frameHSV.cols, CV_8UC1);
@@ -124,10 +124,7 @@ Mat Preprocessing:: getPage(const Mat & src){
 	/// Average last 3 sets of corners
 	avgCorners();
 	/// Display avg set of corners
-	for (int k = 0; k < 4; k++){
-		circle(drawing, avg_corners[k], 7, color, 3);
-	}
-	//return drawing;
+	return avg_corners;
 }
 
 void Preprocessing:: avgCorners(){
@@ -151,7 +148,7 @@ Mat * Preprocessing:: getFinger(const Mat & src){
 	return 0;
 }
 
-Mat * Preprocessing:: getShapes(const Mat & src){
+vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
 	return 0;
 }
 
