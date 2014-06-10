@@ -10,8 +10,11 @@
 Mat skinHue(const Mat & image) {
 	vector<Point2f> corners;
 	Mat result;
-	image.copyTo(result);
+	Rect rectangle_mask(2, 2, image.cols-4, image.rows-4);
+	Mat cropped = image(rectangle_mask);
+	cropped.copyTo(result);
 
+	image.copyTo(result);
 	/// Convert result to HSV
 	cvtColor(result, result, CV_BGR2HSV);
 
@@ -66,14 +69,41 @@ vector<Point> findFingerContour(const Mat & cam_mat) {
 				largest = i;
 			}
 		}
-		return finger_contours[largest];
+		if(finger_contours.size() > 10) return finger_contours[largest];
 	}
-	else return vector<Point>();
+	return vector<Point>();
 }
 
 Point findFingerTip(const Mat & cam_mat) {
-	Mat hue(skinHue(cam_mat));
+	vector<Point> contour = findFingerContour(cam_mat);
+	vector<Point> polygon;
 
+	if(contour.size() > 0) approxPolyDP(contour, polygon, 25, false);
+
+	unsigned int sz = polygon.size();
+
+	if(sz >= 3) {
+		double maxcosa = 0.; // maximum of cosine between two point and vertex in third one
+		unsigned int fingertip = 0; // index of fingertip's point
+		for(unsigned int i = 1; i < sz-1; i++) {
+
+			// Here be dragons (ie. calculating lengths between points of the polygon)
+			double a = abs((contour[i].x-contour[i-1].x)*(contour[i].x-contour[i-1].x) +
+					(contour[i].y-contour[i-1].y)*(contour[i].y-contour[i-1].y));
+			double b = abs((contour[i].x-contour[i+1].x)*(contour[i].x-contour[i+1].x) +
+					(contour[i].y-contour[i+1].y)*(contour[i].y-contour[i+1].y));
+			double c = abs((contour[i+1].x-contour[i-1].x)*(contour[i+1].x-contour[i-1].x) +
+					(contour[i+1].y-contour[i-1].y)*(contour[i+1].y-contour[i-1].y));
+
+			// Based on cosine theorem
+			double cosa = (a+b+c)/(2*sqrt(a*b));
+			if(maxcosa < cosa) {
+				maxcosa = cosa;
+				fingertip = i;
+			}
+		}
+		return contour[fingertip];
+	}
 	return Point(0, 0);
 }
 

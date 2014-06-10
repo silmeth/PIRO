@@ -10,6 +10,7 @@
 
 #include "straightener.h"
 
+#include <cmath>
 #include <vector>
 using namespace std;
 
