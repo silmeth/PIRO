@@ -26,9 +26,9 @@ int main(int argc, const char** argv) {
     int c;
     IplImage* color_img;
     CvCapture* cv_cap = cvCaptureFromCAM(1);
-    cvNamedWindow("Video", 0); // create window
+    namedWindow("Video", WINDOW_OPENGL); // create window
     Mat finger;
-    for(;;) {
+    while(true) {
         color_img = cvQueryFrame(cv_cap); // get frame
         if(color_img != 0) {
             Mat cam_mat(color_img);
@@ -36,29 +36,30 @@ int main(int argc, const char** argv) {
 
             // zwraca narożniki
             vector<Point> corners = preproc.getCorners(cam_mat);
-            if(corners.size() == 4){
+            if(corners.size() == 4) {
                 straight.setCorners(corners);
-                if(straight.straightenImage(cam_mat, str_cam_mat)){
+                if(straight.straightenImage(cam_mat, str_cam_mat)) {
                     if(!shapes_found){
                         shapes = preproc.getShapes(str_cam_mat);
-                        if(shapes.size() > 0){
+                        if(shapes.size() > 0) {
                         shapes_found = true;
                         }
                     }
-                    if(shapes_found){
+                    if(shapes_found) {
                         Mat drawing = str_cam_mat;
                         finger_tip = findFingerTip(str_cam_mat);
                         finger_contour = findFingerContour(str_cam_mat);
-                        if(finger_contour.size() > 0){
-                            drawContours(drawing, shapes, -1, shape_untouched_color);
-                            drawContours(drawing, finger_contour, 0, finger_contour_color);
+                        if(finger_contour.size() > 0) {
+                            vector<vector<Point> > finger_contours_tmp;
+                            finger_contours_tmp.push_back(finger_contour);
+                        	drawContours(drawing, shapes, -1, shape_untouched_color);
+                            drawContours(drawing, finger_contours_tmp, 0, finger_contour_color);
                             circle(drawing, finger_tip, 5, finger_tip_color, 3);
                         }
                         imshow("Video", drawing);
                     }
                 }
             }
-            imshow("Video", finger);
             c = cvWaitKey(10); // wait 10 ms or for key stroke
             if(c == 27) {
                 break; // if ESC, break and quit
@@ -69,8 +70,8 @@ int main(int argc, const char** argv) {
             break; // if ESC, break and quit
     }
     /* clean up */
-    cvReleaseCapture( &cv_cap );
-    cvDestroyWindow("Video");
+    cvReleaseCapture(&cv_cap);
+    destroyAllWindows();
     waitKey(0);
     return 0;
 }
