@@ -12,7 +12,7 @@ void Straightener::sortCorners() {
 
 	/// Find center of mass
 	Point2f center(0,0);
-	for ( unsigned int i = 0; i < corners.size(); i++ ) {
+	for(unsigned int i = 0; i < corners.size(); i++) {
 		center += Point2f(corners[i].x, corners[i].y);
 	}
 	center *= (1. / corners.size());
@@ -20,7 +20,7 @@ void Straightener::sortCorners() {
 	int num_top = -1;
 	int num_bot = -1;
 	int num_corners = -1;
-    for (unsigned int i = 0; i < corners.size(); i++) {
+    for(unsigned int i = 0; i < corners.size(); i++) {
         if ((float)(corners[i].y) <= center.y && top.size() < 2)
             top.push_back(corners[i]);
         else
@@ -42,14 +42,13 @@ void Straightener::sortCorners() {
     corners.push_back(bl);
 }
 
-Straightener::Straightener(const Mat & src) {
-	refresh_corners = 0;
+Straightener::Straightener(const Mat & src, unsigned int w, unsigned int h) :
+		width(w), height(h), refresh_corners(0) {
 	findCorners(src);
 }
 
-Straightener::Straightener() {
-	refresh_corners = 0;
-}
+Straightener::Straightener(unsigned int w, unsigned int h) :
+	width(w), height(h), refresh_corners(0) { }
 
 vector<Point> Straightener::getCorners() {
 	return corners_old;
@@ -79,7 +78,7 @@ bool Straightener::findCorners(const Mat & src) {
 										Size(2*erosion_size + 1, 2*erosion_size+1),
 										Point(erosion_size, erosion_size));
 	dilate(temp, temp, element);
-	HoughLinesP(temp, slines, 1, CV_PI/360, 120,100, 10);
+	HoughLinesP(temp, slines, 1, CV_PI/360, 120, 100, 10);
 
 	if (slines.size() < 4) {
 		new_corners = false;
@@ -203,8 +202,9 @@ bool Straightener::findCorners(const Mat & src) {
 	}
 }
 
-bool Straightener::findTransMatrix(const Mat & src, unsigned int rows,
-									unsigned int cols, bool newCorners) {
+bool Straightener::findTransMatrix(const Mat & src, bool newCorners) {
+	const unsigned int rows = height;
+	const unsigned int cols = width;
 	vector<Point2f> quad_pts;
 	vector<Point2f> corners_old2f;
 
@@ -226,9 +226,10 @@ bool Straightener::findTransMatrix(const Mat & src, unsigned int rows,
 	return true;
 }
 
-bool Straightener::doAll(const Mat & src, Mat & dst, unsigned int rows,
-									unsigned int cols) {
-	if(findTransMatrix(src, rows, cols, true)) {
+bool Straightener::doAll(const Mat & src, Mat & dst) {
+	const unsigned int rows = height;
+	const unsigned int cols = width;
+	if(findTransMatrix(src, true)) {
 		dst = Mat::zeros(rows, cols, CV_8UC3);
 		warpPerspective(src, dst, trans_mat, dst.size());
 		return true;
@@ -236,9 +237,10 @@ bool Straightener::doAll(const Mat & src, Mat & dst, unsigned int rows,
 	return false;
 }
 
-bool Straightener::straightenImage(const Mat & src, Mat & dst, unsigned int rows,
-									unsigned int cols) {
-	if(findTransMatrix(src, rows, cols, false)) {
+bool Straightener::straightenImage(const Mat & src, Mat & dst) {
+	const unsigned int rows = height;
+	const unsigned int cols = width;
+	if(findTransMatrix(src, false)) {
 		dst = Mat::zeros(rows, cols, CV_8UC3);
 		warpPerspective(src, dst, trans_mat, dst.size());
 		return true;

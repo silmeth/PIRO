@@ -10,7 +10,7 @@
 using namespace std;
 using namespace cv;
 
-Preprocessing:: Preprocessing(void){
+Preprocessing:: Preprocessing(void) : straight(640, 480) {
 	/// Enter some points to last_corners
 	Point p = Point(10, 10);
 	vector <Point> temp_vec;
@@ -41,7 +41,7 @@ vector<Point> Preprocessing:: getCorners(const Mat & src){
 
 	Mat temp3;
 	Sat.copyTo(temp3);
-	imshow("VIDEO", temp3);
+//	imshow("VIDEO", temp3);
 
 	// Dilation
 	int erosion_type = 2;

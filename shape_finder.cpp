@@ -65,9 +65,9 @@ void camera_straighten_display(int num, char* window_name) {
 			Mat result;
 			cam_mat.copyTo(result);
 
-			Straightener straight(cam_mat);
+			Straightener straight(640, 480);
 
-			if(straight.straightenImage(cam_mat, result, 450, 300)) {
+			if(straight.doAll(cam_mat, result)) {
 				imshow("Video", result); // show frame
 			}
 		}
@@ -93,7 +93,7 @@ void camera_contours_display(int num, Straightener & straight) {
 				Mat result;
 				cam_mat.copyTo(result);
 
-				if (straight.straightenImage(cam_mat, result, 423, 300)) {
+				if(straight.doAll(cam_mat, result)) {
 					///Apply blur
 					blur(result, result, Size(3,3));
 					///Apply Canny to destination Matrix
@@ -104,13 +104,13 @@ void camera_contours_display(int num, Straightener & straight) {
 					vector<Vec4i> hierarchy;
 					int erosion_type = 2;
 					int erosion_size = 3;
-					Mat element = getStructuringElement( erosion_type,
-														   Size( 2*erosion_size + 1, 2*erosion_size+1 ),
-														   Point( erosion_size, erosion_size ) );
+					Mat element = getStructuringElement(erosion_type,
+														Size( 2*erosion_size + 1, 2*erosion_size+1),
+														Point( erosion_size, erosion_size));
 					dilate(result, result, element);
 					/// Cut 20 px from each side to avoid paper borders detection
 					result = result(Rect(10, 10, result.cols-20, result.rows-20));
-					findContours( result, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0) );
+					findContours(result, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0));
 					/// Draw contours
 					Mat drawing = Mat::zeros( result.size(), CV_8UC3 );
 					/// https://github.com/Itseez/opencv/blob/master/samples/cpp/contours2.cpp
