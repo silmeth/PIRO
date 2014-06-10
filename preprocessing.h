@@ -21,7 +21,6 @@ class Preprocessing{
 public:
 	Preprocessing(void);
 	vector<Point> getCorners(const Mat & src);
-	Mat * getFinger(const Mat & src);
 	vector<vector<Point> > getShapes(const Mat & src);
 	void addNewCorners(vector<Point>);
 	void avgCorners();

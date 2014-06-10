@@ -152,6 +152,3 @@ vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
 	return 0;
 }
 
-
-
-
