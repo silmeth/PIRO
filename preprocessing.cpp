@@ -127,6 +127,7 @@ vector<Point> Preprocessing:: getCorners(const Mat & src){
 	return avg_corners;
 }
 
+// Average last 3 sets of corners
 void Preprocessing:: avgCorners(){
 	vector<Point> temp_vec;
 	Point zero_point = Point(0, 0);
@@ -144,11 +145,9 @@ void Preprocessing:: avgCorners(){
 	}
 }
 
-Mat * Preprocessing:: getFinger(const Mat & src){
-	return 0;
-}
-
+// Return empty vector of vectors if no shapes found
 vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
-	return 0;
+	vector<vector<Point> > temp_shapes;
+	return temp_shapes;
 }
 
