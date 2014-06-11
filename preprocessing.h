@@ -23,10 +23,15 @@ public:
 	vector<Point> getCorners(const Mat & src);
 	vector<Point> getCorners2(const Mat & src);
 	vector<vector<Point> > getShapes(const Mat & src);
+	vector<vector<Point> > getTriangles();
+	vector<vector<Point> > getRectangles();
+	vector<vector<Point> > getCircles();
+	vector<vector<Point> > getOtherShapes();
 	void addNewCorners(vector<Point>);
 	void avgCorners();
 	vector<Point> avg_corners;
 private:
+	vector<vector<Point> > triangles, rectangles, circles, other_shapes;
 	Straightener straight;
 	vector<vector<Point> > last_corners;
 };

@@ -5,6 +5,8 @@
  *      Author: jacek
  */
 
+#include <iostream>
+
 #include "preprocessing.h"
 
 using namespace std;
@@ -250,12 +252,49 @@ void Preprocessing:: avgCorners(){
 
 // Return empty vector of vectors if no shapes found
 vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
-	vector<Point> triangle_cnt;
-	Mat triangle_mat = imread("./img/triangle.png");
-	Mat gray;
-	cvtColor(src, gray, CV_BGR2GRAY);
-	blur(gray, gray, Size(5,5));
-	vector<vector<Point> > temp_shapes;
-	return temp_shapes;
+	vector<Point> approx_contour;
+	vector<Vec4i> triangle_hier;
+	vector<Vec4i> source_hier;
+ 	vector<vector<Point> > triangle_cnt;
+	vector<vector<Point> > source_cnt;
+	Mat triangle = imread("./img/triangle.png", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat source;
+	cvtColor(src, source, CV_BGR2GRAY);
+	blur(source, source, Size(5,5));
+	double source_th, triangle_th;
+	Mat tempMat = src.clone();
+	source_th = threshold(source, tempMat, 0, 255, THRESH_BINARY + THRESH_OTSU);
+	triangle_th = threshold(triangle, tempMat, 0, 255, THRESH_BINARY + THRESH_OTSU);
+	threshold(source, source, source_th, 255, THRESH_BINARY);
+	threshold(triangle, triangle, triangle_th, 255, THRESH_BINARY);
+	findContours( source, source_cnt, source_hier, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0) );
+	findContours( triangle, triangle_cnt, triangle_hier, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0) );
+	if(triangle_cnt.size() > 0){
+		cout << "tr_cnt: " << triangle_cnt.size() << " src_cnt: " << source_cnt.size() << endl;
+		for(int i = 0; i < source_cnt.size(); i++){
+			if(matchShapes(source_cnt[i], triangle_cnt[0], 1, 0.0) > 0.25){
+				triangles.push_back(source_cnt[i]);
+			}
+		}
+	}
+	return triangles;
+}
+
+vector<vector<Point> > Preprocessing:: getTriangles(){
+	vector<vector<Point> > temp = triangles;
+	triangles.clear();
+	return temp;
+}
+
+vector<vector<Point> > Preprocessing:: getRectangles(){
+	return rectangles;
+}
+
+vector<vector<Point> > Preprocessing:: getCircles(){
+	return circles;
+}
+
+vector<vector<Point> > Preprocessing:: getOtherShapes(){
+	return other_shapes;
 }
 

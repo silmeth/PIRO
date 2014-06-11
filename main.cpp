@@ -14,8 +14,8 @@ using namespace std;
 int main(int argc, const char** argv) {
     Preprocessing preproc;
     Straightener straight(640, 480);
-    bool shapes_found = true;
-    vector<vector<Point> > shapes;
+    bool shapes_found = false;
+    vector<vector<Point> > triangles, rectangles, circles, other_shapes;
     vector<Point> finger_contour;
     Point finger_tip;
     // Colors
@@ -40,20 +40,23 @@ int main(int argc, const char** argv) {
                 straight.setCorners(corners);
                 if(straight.straightenImage(cam_mat, str_cam_mat)) {
                     if(!shapes_found){
-                        shapes = preproc.getShapes(str_cam_mat);
-                        if(shapes.size() > 0) {
+                        preproc.getShapes(str_cam_mat);
+                        triangles = preproc.getTriangles();
+                        if(triangles.size() > 0) {
                         	shapes_found = true;
                         }
                         imshow("Video", str_cam_mat);
                     }
                     if(shapes_found) {
-                        Mat drawing = str_cam_mat;
+                        Mat drawing = str_cam_mat.clone();
                         finger_tip = findFingerTip(str_cam_mat);
                         finger_contour = findFingerContour(str_cam_mat);
+                        preproc.getShapes(str_cam_mat);
+                        triangles = preproc.getTriangles();
                         if(finger_contour.size() > 0) {
                             vector<vector<Point> > finger_contours_tmp;
                             finger_contours_tmp.push_back(finger_contour);
-                        	//drawContours(drawing, shapes, -1, shape_untouched_color);
+                        	drawContours(drawing, triangles, -1, shape_untouched_color);
                             drawContours(drawing, finger_contours_tmp, 0, finger_contour_color);
                             circle(drawing, finger_tip, 5, finger_tip_color, 3);
                         }
