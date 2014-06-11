@@ -42,8 +42,9 @@ int main(int argc, const char** argv) {
                     if(!shapes_found){
                         shapes = preproc.getShapes(str_cam_mat);
                         if(shapes.size() > 0) {
-                        shapes_found = true;
+                        	shapes_found = true;
                         }
+                        imshow("Video", str_cam_mat);
                     }
                     if(shapes_found) {
                         Mat drawing = str_cam_mat;
