@@ -252,7 +252,7 @@ void Preprocessing:: avgCorners(){
 
 // Return empty vector of vectors if no shapes found
 vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
-	vector<Point> approx_contour;
+	vector<Point> approx_cnt;
 	vector<Vec4i> triangle_hier;
 	vector<Vec4i> source_hier;
  	vector<vector<Point> > triangle_cnt;
@@ -271,9 +271,21 @@ vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
 	findContours( triangle, triangle_cnt, triangle_hier, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0) );
 	if(triangle_cnt.size() > 0){
 		cout << "tr_cnt: " << triangle_cnt.size() << " src_cnt: " << source_cnt.size() << endl;
-		for(int i = 0; i < source_cnt.size(); i++){
-			if(matchShapes(source_cnt[i], triangle_cnt[0], 1, 0.0) > 0.25){
-				triangles.push_back(source_cnt[i]);
+		for(unsigned int i = 0; i < source_cnt.size(); i++){
+			if(contourArea(source_cnt[i]) < 0.2*src.cols*src.rows){
+				if(matchShapes(source_cnt[i], triangle_cnt[0], 1, 0.0) > 0.25){
+					triangles.push_back(source_cnt[i]);
+				}
+				else{
+					approx_cnt.clear();
+					approxPolyDP(source_cnt[i], approx_cnt, 4, true);
+					if(approx_cnt.size() == 4){
+						rectangles.push_back(source_cnt[i]);
+					}
+					else if(approx_cnt.size() == 8){
+						other_shapes.push_back(source_cnt[i]);
+					}
+				}
 			}
 		}
 	}
@@ -287,7 +299,9 @@ vector<vector<Point> > Preprocessing:: getTriangles(){
 }
 
 vector<vector<Point> > Preprocessing:: getRectangles(){
-	return rectangles;
+	vector<vector<Point> > temp = rectangles;
+	rectangles.clear();
+	return temp;
 }
 
 vector<vector<Point> > Preprocessing:: getCircles(){
@@ -295,6 +309,8 @@ vector<vector<Point> > Preprocessing:: getCircles(){
 }
 
 vector<vector<Point> > Preprocessing:: getOtherShapes(){
-	return other_shapes;
+	vector<vector<Point> > temp = other_shapes;
+	other_shapes.clear();
+	return temp;
 }
 

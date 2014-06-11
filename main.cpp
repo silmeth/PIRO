@@ -21,8 +21,10 @@ int main(int argc, const char** argv) {
     // Colors
     Scalar finger_contour_color( 255, 0, 0);
     Scalar finger_tip_color(rand()&255, rand()&255, rand()&255);
-    Scalar shape_untouched_color(0, 255, 0);
-    Scalar shape_touched_color(0, 0, 255);
+    Scalar triangle_color(0, 255, 0);
+    Scalar rectangle_color(0, 0, 255);
+    Scalar other_shape_color(255, 0, 0);
+    Scalar circle_color(255, 127, 127);
     int c;
     IplImage* color_img;
     CvCapture* cv_cap = cvCaptureFromCAM(1);
@@ -53,10 +55,14 @@ int main(int argc, const char** argv) {
                         finger_contour = findFingerContour(str_cam_mat);
                         preproc.getShapes(str_cam_mat);
                         triangles = preproc.getTriangles();
+                        rectangles = preproc.getRectangles();
+                        other_shapes = preproc.getOtherShapes();
                         if(finger_contour.size() > 0) {
                             vector<vector<Point> > finger_contours_tmp;
                             finger_contours_tmp.push_back(finger_contour);
-                        	drawContours(drawing, triangles, -1, shape_untouched_color);
+                        	drawContours(drawing, triangles, -1, triangle_color);
+                        	drawContours(drawing, rectangles, -1, rectangle_color);
+                        	drawContours(drawing, other_shapes, -1, other_shape_color);
                             drawContours(drawing, finger_contours_tmp, 0, finger_contour_color);
                             circle(drawing, finger_tip, 5, finger_tip_color, 3);
                         }
