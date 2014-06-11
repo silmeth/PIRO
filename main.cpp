@@ -35,7 +35,7 @@ int main(int argc, const char** argv) {
             Mat str_cam_mat;
 
             // zwraca narożniki
-            vector<Point> corners = preproc.getCorners(cam_mat);
+            vector<Point> corners = preproc.getCorners2(cam_mat);
             if(corners.size() == 4) {
                 straight.setCorners(corners);
                 if(straight.straightenImage(cam_mat, str_cam_mat)) {

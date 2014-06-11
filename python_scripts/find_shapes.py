@@ -14,7 +14,7 @@ def get_biggest_contour(contours):
 
 cap = cv2.VideoCapture(1)
 
-folder_path = "/home/jacek/Studia/PIRO/face_rec_test/benchmark_images/"
+folder_path = "/home/jacek/Studia/PIRO/face_rec_test/img/"
 triagle_f_name = "triangle.png"
 rectangle_f_name = "rectangle.png"
 
@@ -49,8 +49,8 @@ while(True):
                 cv2.drawContours(frame, [cnt], -1, (0, 255, 0), 1, 1, maxLevel=0)
             elif cv2.matchShapes(cnt, rectangle_contour[0], 1, 0.0) > 0.2:
                 cv2.drawContours(frame, [cnt], -1, (0, 0, 255), 1, 1, maxLevel=0)
-    circles = cv2.HoughCircles(otsu_gray,cv2.cv.CV_HOUGH_GRADIENT,1,20,
-                            param1=50,param2=30,minRadius=0,maxRadius=0)
+    #circles = cv2.HoughCircles(otsu_gray,cv2.cv.CV_HOUGH_GRADIENT,1,20,
+    #                        param1=50,param2=30,minRadius=0,maxRadius=0)
     cv2.imshow('frame', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
