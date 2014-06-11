@@ -15,7 +15,7 @@ int main(int argc, const char** argv) {
     Preprocessing preproc;
     Straightener straight(640, 480);
     bool shapes_found = false;
-    vector<vector<Point> > triangles, rectangles, circles, other_shapes;
+    vector<vector<Point> > triangles, rectangles, circles, other_shapes, temp_shapes;
     vector<Point> finger_contour;
     Point finger_tip;
     // Colors
@@ -54,15 +54,24 @@ int main(int argc, const char** argv) {
                         finger_tip = findFingerTip(str_cam_mat);
                         finger_contour = findFingerContour(str_cam_mat);
                         preproc.getShapes(str_cam_mat);
-                        triangles = preproc.getTriangles();
-                        rectangles = preproc.getRectangles();
-                        other_shapes = preproc.getOtherShapes();
+                        temp_shapes = preproc.getTriangles();
+                        if(temp_shapes.size() > 0){
+                        	triangles = temp_shapes;
+                        }
+                        temp_shapes = preproc.getRectangles();
+					    if(temp_shapes.size() > 0){
+					    	rectangles = temp_shapes;
+					    }
+					    temp_shapes = preproc.getOtherShapes();
+					    if(temp_shapes.size() > 0){
+					    	other_shapes = temp_shapes;
+					    }
+                        drawContours(drawing, triangles, -1, triangle_color, 2);
+						drawContours(drawing, rectangles, -1, rectangle_color, 2);
+						drawContours(drawing, other_shapes, -1, other_shape_color, 2);
                         if(finger_contour.size() > 0) {
                             vector<vector<Point> > finger_contours_tmp;
                             finger_contours_tmp.push_back(finger_contour);
-                        	drawContours(drawing, triangles, -1, triangle_color);
-                        	drawContours(drawing, rectangles, -1, rectangle_color);
-                        	drawContours(drawing, other_shapes, -1, other_shape_color);
                             drawContours(drawing, finger_contours_tmp, 0, finger_contour_color);
                             circle(drawing, finger_tip, 5, finger_tip_color, 3);
                         }

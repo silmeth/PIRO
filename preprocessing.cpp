@@ -278,7 +278,7 @@ vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
 				}
 				else{
 					approx_cnt.clear();
-					approxPolyDP(source_cnt[i], approx_cnt, 4, true);
+					approxPolyDP(source_cnt[i], approx_cnt, 5, true);
 					if(approx_cnt.size() == 4){
 						rectangles.push_back(source_cnt[i]);
 					}
