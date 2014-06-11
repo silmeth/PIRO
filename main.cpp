@@ -14,7 +14,7 @@ using namespace std;
 int main(int argc, const char** argv) {
     Preprocessing preproc;
     Straightener straight(640, 480);
-    bool shapes_found = false;
+    bool shapes_found = true;
     vector<vector<Point> > shapes;
     vector<Point> finger_contour;
     Point finger_tip;
@@ -53,7 +53,7 @@ int main(int argc, const char** argv) {
                         if(finger_contour.size() > 0) {
                             vector<vector<Point> > finger_contours_tmp;
                             finger_contours_tmp.push_back(finger_contour);
-                        	drawContours(drawing, shapes, -1, shape_untouched_color);
+                        	//drawContours(drawing, shapes, -1, shape_untouched_color);
                             drawContours(drawing, finger_contours_tmp, 0, finger_contour_color);
                             circle(drawing, finger_tip, 5, finger_tip_color, 3);
                         }

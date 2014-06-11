@@ -208,13 +208,16 @@ vector<Point> Preprocessing:: getCorners2(const Mat & src){
 				}
 				/// No point is on border of image
 				if(is_border == false){
-					last_corners[0] = last_corners[1];
-					last_corners[1] = last_corners[2];
-					last_corners[2] = approx_contour;
-					/// Sort corners
-					for(int i=0; i<3; i++){
-						straight.setCorners(last_corners[i]);
-						last_corners[i] = straight.getCorners();
+					/// Check if are is neither too big nor to small (15-80%)
+					if(contourArea(approx_contour) > 0.15*src.cols*src.rows && contourArea(approx_contour) < 0.80*src.cols*src.rows){
+							last_corners[0] = last_corners[1];
+							last_corners[1] = last_corners[2];
+							last_corners[2] = approx_contour;
+							/// Sort corners
+							for(int i=0; i<3; i++){
+								straight.setCorners(last_corners[i]);
+								last_corners[i] = straight.getCorners();
+							}
 					}
 				}
 			}
