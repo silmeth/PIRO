@@ -14,7 +14,7 @@ using namespace std;
 int main(int argc, const char** argv) {
     Preprocessing preproc;
     Straightener straight(640, 480);
-    bool shapes_found = true;
+    bool shapes_found = false;
     vector<vector<Point> > triangles, rectangles, other_shapes, temp_shapes, circles;
     vector<Point> finger_contour;
     Point finger_tip;
@@ -30,6 +30,7 @@ int main(int argc, const char** argv) {
     CvCapture* cv_cap = cvCaptureFromCAM(1);
     namedWindow("Video", WINDOW_OPENGL); // create window
     Mat finger;
+    int frames_with_shapes = 0;
     while(true) {
         color_img = cvQueryFrame(cv_cap); // get frame
         if(color_img != 0) {
@@ -42,34 +43,30 @@ int main(int argc, const char** argv) {
                 straight.setCorners(corners);
                 if(straight.straightenImage(cam_mat, str_cam_mat)) {
                     if(!shapes_found){
-                        preproc.getShapes(str_cam_mat);
-                        triangles = preproc.getTriangles();
-                        if(triangles.size() > 0) {
-                        	shapes_found = true;
-                        }
-                        imshow("Video", str_cam_mat);
+                    	preproc.getShapes(str_cam_mat);
+						triangles = preproc.getTriangles();
+						rectangles = preproc.getRectangles();
+						circles = preproc.getCircles();
+						other_shapes = preproc.getOtherShapes();
+						if(triangles.size() == 4
+								&& rectangles.size() == 6
+								&& other_shapes.size() == 2
+								&& circles.size() == 8){
+							frames_with_shapes += 1;
+						}
+						else{
+							frames_with_shapes = 0;
+						}
+						if(frames_with_shapes == 3){
+							shapes_found = true;
+						}
+						Mat merged = preproc.mergeMatrixes(cam_mat, str_cam_mat);
+                        imshow("Video", merged);
                     }
                     if(shapes_found) {
                         Mat drawing = str_cam_mat.clone();
                         finger_tip = findFingerTip(str_cam_mat);
                         finger_contour = findFingerContour(str_cam_mat);
-                        preproc.getShapes(str_cam_mat);
-                        temp_shapes = preproc.getTriangles();
-                        if(temp_shapes.size() == 4){
-                        	triangles = temp_shapes;
-                        }
-                        temp_shapes = preproc.getRectangles();
-					    if(temp_shapes.size() == 6){
-					    	rectangles = temp_shapes;
-					    }
-					    temp_shapes = preproc.getOtherShapes();
-					    if(temp_shapes.size() == 2){
-					    	other_shapes = temp_shapes;
-					    }
-					    temp_shapes = preproc.getCircles();
-						if(temp_shapes.size() == 8){
-							 circles = temp_shapes;
-						}
                         drawContours(drawing, triangles, -1, triangle_color, 2);
 						drawContours(drawing, rectangles, -1, rectangle_color, 2);
 						drawContours(drawing, other_shapes, -1, other_shape_color, 2);
