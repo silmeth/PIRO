@@ -22,16 +22,21 @@ public:
 	Preprocessing(void);
 	vector<Point> getCorners(const Mat & src);
 	vector<Point> getCorners2(const Mat & src);
+	/*
+	 * Currently supports only matrixes of the same size!
+	 */
+	Mat mergeMatrixes(const Mat & mat_l, const Mat & mat_r);
 	vector<vector<Point> > getShapes(const Mat & src);
 	vector<vector<Point> > getTriangles();
 	vector<vector<Point> > getRectangles();
-	vector<vector<Point> > getCircles();
+	vector<Vec3f> getCircles();
 	vector<vector<Point> > getOtherShapes();
 	void addNewCorners(vector<Point>);
 	void avgCorners();
 	vector<Point> avg_corners;
 private:
-	vector<vector<Point> > triangles, rectangles, circles, other_shapes;
+	vector<vector<Point> > triangles, rectangles, other_shapes;
+	vector<Vec3f> circles;
 	Straightener straight;
 	vector<vector<Point> > last_corners;
 };

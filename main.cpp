@@ -14,8 +14,9 @@ using namespace std;
 int main(int argc, const char** argv) {
     Preprocessing preproc;
     Straightener straight(640, 480);
-    bool shapes_found = false;
-    vector<vector<Point> > triangles, rectangles, circles, other_shapes, temp_shapes;
+    bool shapes_found = true;
+    vector<vector<Point> > triangles, rectangles, other_shapes, temp_shapes;
+    vector<Vec3f> circles;
     vector<Point> finger_contour;
     Point finger_tip;
     // Colors
@@ -75,7 +76,8 @@ int main(int argc, const char** argv) {
                             drawContours(drawing, finger_contours_tmp, 0, finger_contour_color);
                             circle(drawing, finger_tip, 5, finger_tip_color, 3);
                         }
-                        imshow("Video", drawing);
+                        Mat merged = preproc.mergeMatrixes(cam_mat, drawing);
+                        imshow("Video", merged);
                     }
                 }
             }

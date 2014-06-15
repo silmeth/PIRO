@@ -232,6 +232,29 @@ vector<Point> Preprocessing:: getCorners2(const Mat & src){
 		return avg_corners;
 }
 
+/*
+ * Merges two matrixes into one for easier display.
+ * Supports only matrixes of the same size!
+ */
+Mat Preprocessing:: mergeMatrixes(const Mat & mat_l, const Mat & mat_r){
+	if(mat_l.rows != mat_r.rows || mat_l.cols != mat_r.cols){
+		Mat empty;
+		empty.release();
+		return empty;
+	}
+	else{
+		// Convert to 8 bit, 3 channel
+		Mat left = mat_l.clone();
+		Mat right = mat_r.clone();
+		left.convertTo(left, CV_8UC3);
+		right.convertTo(right, CV_8UC3);
+		Mat merged = Mat(left.rows, left.cols*2, CV_8UC3);
+		left.copyTo(merged(Rect(0, 0, left.cols, left.rows)));
+		right.copyTo(merged(Rect(left.cols, 0, right.cols, right.rows)));
+		return merged;
+	}
+}
+
 // Average last 3 sets of corners
 void Preprocessing:: avgCorners(){
 	vector<Point> temp_vec;
@@ -269,6 +292,7 @@ vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
 	threshold(triangle, triangle, triangle_th, 255, THRESH_BINARY);
 	findContours( source, source_cnt, source_hier, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0) );
 	findContours( triangle, triangle_cnt, triangle_hier, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0) );
+	//HoughCircles(source, circles, CV_HOUGH_GRADIENT, 2, 40, 100, 200, 30, 200);
 	if(triangle_cnt.size() > 0){
 		cout << "tr_cnt: " << triangle_cnt.size() << " src_cnt: " << source_cnt.size() << endl;
 		for(unsigned int i = 0; i < source_cnt.size(); i++){
@@ -282,9 +306,9 @@ vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
 					if(approx_cnt.size() == 4){
 						rectangles.push_back(source_cnt[i]);
 					}
-					else if(approx_cnt.size() == 8){
-						other_shapes.push_back(source_cnt[i]);
-					}
+//					else if(approx_cnt.size() == 8){
+//						other_shapes.push_back(source_cnt[i]);
+//					}
 				}
 			}
 		}
@@ -304,8 +328,10 @@ vector<vector<Point> > Preprocessing:: getRectangles(){
 	return temp;
 }
 
-vector<vector<Point> > Preprocessing:: getCircles(){
-	return circles;
+vector<Vec3f> Preprocessing:: getCircles(){
+	vector<Vec3f> temp = circles;
+	circles.clear();
+	return temp;
 }
 
 vector<vector<Point> > Preprocessing:: getOtherShapes(){
