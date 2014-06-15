@@ -292,9 +292,9 @@ vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
 	threshold(triangle, triangle, triangle_th, 255, THRESH_BINARY);
 	findContours( source, source_cnt, source_hier, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0) );
 	findContours( triangle, triangle_cnt, triangle_hier, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0) );
-	//HoughCircles(source, circles, CV_HOUGH_GRADIENT, 2, 40, 100, 200, 30, 200);
+	HoughCircles(source, circles, CV_HOUGH_GRADIENT, 2, 40, 100, 200, 30, 200);
 	if(triangle_cnt.size() > 0){
-		cout << "tr_cnt: " << triangle_cnt.size() << " src_cnt: " << source_cnt.size() << endl;
+		//cout << "tr_cnt: " << triangle_cnt.size() << " src_cnt: " << source_cnt.size() << endl;
 		for(unsigned int i = 0; i < source_cnt.size(); i++){
 			if(contourArea(source_cnt[i]) < 0.2*src.cols*src.rows){
 				if(matchShapes(source_cnt[i], triangle_cnt[0], 1, 0.0) > 0.25){
@@ -305,6 +305,17 @@ vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
 					approxPolyDP(source_cnt[i], approx_cnt, 5, true);
 					if(approx_cnt.size() == 4){
 						rectangles.push_back(source_cnt[i]);
+					}
+					else{
+						vector<Point> hull;
+						convexHull(source_cnt[i], hull);
+						if(hull.size() < contourArea(source_cnt[i]) / 275.0){
+							cout << hull.size() << " " << contourArea(source_cnt[i]) << endl;
+							other_shapes.push_back(source_cnt[i]);
+						}
+						else{
+							//cout << hull.size() << endl;
+						}
 					}
 //					else if(approx_cnt.size() == 8){
 //						other_shapes.push_back(source_cnt[i]);
