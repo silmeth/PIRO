@@ -314,7 +314,7 @@ vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
 							other_shapes.push_back(source_cnt[i]);
 						}
 						else{
-							//cout << hull.size() << endl;
+							circles.push_back(source_cnt[i]);
 						}
 					}
 //					else if(approx_cnt.size() == 8){
@@ -339,8 +339,8 @@ vector<vector<Point> > Preprocessing:: getRectangles(){
 	return temp;
 }
 
-vector<Vec3f> Preprocessing:: getCircles(){
-	vector<Vec3f> temp = circles;
+vector<vector<Point> > Preprocessing:: getCircles(){
+	vector<vector<Point> > temp = circles;
 	circles.clear();
 	return temp;
 }

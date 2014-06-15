@@ -29,14 +29,13 @@ public:
 	vector<vector<Point> > getShapes(const Mat & src);
 	vector<vector<Point> > getTriangles();
 	vector<vector<Point> > getRectangles();
-	vector<Vec3f> getCircles();
+	vector<vector<Point> > getCircles();
 	vector<vector<Point> > getOtherShapes();
 	void addNewCorners(vector<Point>);
 	void avgCorners();
 	vector<Point> avg_corners;
 private:
-	vector<vector<Point> > triangles, rectangles, other_shapes;
-	vector<Vec3f> circles;
+	vector<vector<Point> > triangles, rectangles, other_shapes, circles;
 	Straightener straight;
 	vector<vector<Point> > last_corners;
 };

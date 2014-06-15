@@ -15,8 +15,7 @@ int main(int argc, const char** argv) {
     Preprocessing preproc;
     Straightener straight(640, 480);
     bool shapes_found = true;
-    vector<vector<Point> > triangles, rectangles, other_shapes, temp_shapes;
-    vector<Vec3f> circles;
+    vector<vector<Point> > triangles, rectangles, other_shapes, temp_shapes, circles;
     vector<Point> finger_contour;
     Point finger_tip;
     // Colors
@@ -25,7 +24,7 @@ int main(int argc, const char** argv) {
     Scalar triangle_color(0, 255, 0);
     Scalar rectangle_color(0, 0, 255);
     Scalar other_shape_color(255, 0, 0);
-    Scalar circle_color(255, 127, 127);
+    Scalar circle_color(0, 140, 255);
     int c;
     IplImage* color_img;
     CvCapture* cv_cap = cvCaptureFromCAM(1);
@@ -56,20 +55,25 @@ int main(int argc, const char** argv) {
                         finger_contour = findFingerContour(str_cam_mat);
                         preproc.getShapes(str_cam_mat);
                         temp_shapes = preproc.getTriangles();
-                        if(temp_shapes.size() > 0){
+                        if(temp_shapes.size() == 4){
                         	triangles = temp_shapes;
                         }
                         temp_shapes = preproc.getRectangles();
-					    if(temp_shapes.size() > 0){
+					    if(temp_shapes.size() == 6){
 					    	rectangles = temp_shapes;
 					    }
 					    temp_shapes = preproc.getOtherShapes();
-					    if(temp_shapes.size() > 0){
+					    if(temp_shapes.size() == 2){
 					    	other_shapes = temp_shapes;
 					    }
+					    temp_shapes = preproc.getCircles();
+						if(temp_shapes.size() == 8){
+							 circles = temp_shapes;
+						}
                         drawContours(drawing, triangles, -1, triangle_color, 2);
 						drawContours(drawing, rectangles, -1, rectangle_color, 2);
 						drawContours(drawing, other_shapes, -1, other_shape_color, 2);
+						drawContours(drawing, circles, -1, circle_color, 2);
                         if(finger_contour.size() > 0) {
                             vector<vector<Point> > finger_contours_tmp;
                             finger_contours_tmp.push_back(finger_contour);
