@@ -75,27 +75,30 @@ vector<Point> findFingerContour(const Mat & cam_mat) {
 }
 
 Point findFingerTip(const Mat & cam_mat) {
-	vector<Point> contour = findFingerContour(cam_mat);
-	vector<Point> polygon;
+	const unsigned int pt_len = 30;
 
-	if(contour.size() > 0) approxPolyDP(contour, polygon, 18, false);
+	vector<Point> contour = findFingerContour(cam_mat);
+	vector<Point> polygon = contour;
+
+//	if(contour.size() > 0) approxPolyDP(contour, polygon, 18, false);
 
 	unsigned int sz = polygon.size();
 
-	if(sz >= 3) {
+	if(sz >= 2*pt_len + 1) {
 		Mat drawing;
 
 		double maxcosa = 0.; // maximum of cosine between two point and vertex in third one
 		unsigned int ft_idx = 0; // index of fingertip's point
-		for(unsigned int i = 1; i < sz-1; i++) {
-
-			// Here be dragons (ie. calculating lengths between points of the polygon)
-			double a = (polygon[i].x-polygon[i-1].x)*(polygon[i].x-polygon[i-1].x) +
-					(polygon[i].y-polygon[i-1].y)*(polygon[i].y-polygon[i-1].y);
-			double b = (polygon[i].x-polygon[i+1].x)*(polygon[i].x-polygon[i+1].x) +
-					(polygon[i].y-polygon[i+1].y)*(polygon[i].y-polygon[i+1].y);
-			double c = (polygon[i+1].x-polygon[i-1].x)*(polygon[i+1].x-polygon[i-1].x) +
-					(polygon[i+1].y-polygon[i-1].y)*(polygon[i+1].y-polygon[i-1].y);
+		for(unsigned int i = 0; i < sz; i++) {
+			unsigned int prev = ((i-pt_len)%sz+sz)%sz;
+			unsigned int next = (i+pt_len)%sz;
+			// Here be dragons (i.e. calculating sqrs of lengths between points of the polygon)
+			double a = (polygon[i].x-polygon[prev].x)*(polygon[i].x-polygon[prev].x) +
+					(polygon[i].y-polygon[prev].y)*(polygon[i].y-polygon[prev].y);
+			double b = (polygon[i].x-polygon[next].x)*(polygon[i].x-polygon[next].x) +
+					(polygon[i].y-polygon[next].y)*(polygon[i].y-polygon[next].y);
+			double c = (polygon[next].x-polygon[prev].x)*(polygon[next].x-polygon[prev].x) +
+					(polygon[next].y-polygon[prev].y)*(polygon[next].y-polygon[prev].y);
 
 			// Based on cosine theorem
 			double cosa = (a+b+c)/(2*sqrt(a*b));

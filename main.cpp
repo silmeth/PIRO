@@ -26,15 +26,18 @@ int main(int argc, const char** argv) {
     Scalar other_shape_color(255, 0, 0);
     Scalar circle_color(0, 140, 255);
     int c;
-    IplImage* color_img;
-    CvCapture* cv_cap = cvCaptureFromCAM(1);
+    // IplImage* color_img;
+    VideoCapture cv_cap(1); //    CvCapture* cv_cap = cvCaptureFromCAM(1);
     namedWindow("Video", WINDOW_OPENGL); // create window
     Mat finger;
     int frames_with_shapes = 0;
     while(true) {
-        color_img = cvQueryFrame(cv_cap); // get frame
-        if(color_img != 0) {
-            Mat cam_mat(color_img);
+//        color_img = cvQueryFrame(cv_cap); // get frame
+//        if(color_img != 0) {
+//            Mat cam_mat(color_img);
+    	Mat cam_mat;
+    	cv_cap >> cam_mat;
+    	if(cam_mat.rows > 0 && cam_mat.cols > 0) {
             Mat str_cam_mat;
 
             // zwraca narożniki
@@ -92,7 +95,8 @@ int main(int argc, const char** argv) {
             break; // if ESC, break and quit
     }
     /* clean up */
-    cvReleaseCapture(&cv_cap);
+//    cvReleaseCapture(&cv_cap);
+    cv_cap.release();
     destroyAllWindows();
     waitKey(0);
     return 0;
