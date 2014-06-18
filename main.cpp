@@ -64,7 +64,9 @@ int main(int argc, const char** argv) {
 							shapes_found = true;
 						}
 						Mat merged = preproc.mergeMatrixes(cam_mat, str_cam_mat);
-                        imshow("Video", merged);
+						if(!merged.empty()){
+							imshow("Video", merged);
+						}
                     }
                     if(shapes_found) {
                         Mat drawing = str_cam_mat.clone();
@@ -81,7 +83,9 @@ int main(int argc, const char** argv) {
                             circle(drawing, finger_tip, 5, finger_tip_color, 3);
                         }
                         Mat merged = preproc.mergeMatrixes(cam_mat, drawing);
-                        imshow("Video", merged);
+                        if(!merged.empty()){
+                        	imshow("Video", merged);
+                        }
                     }
                 }
             }

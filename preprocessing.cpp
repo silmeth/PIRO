@@ -237,9 +237,11 @@ vector<Point> Preprocessing:: getCorners2(const Mat & src){
  * Supports only matrixes of the same size!
  */
 Mat Preprocessing:: mergeMatrixes(const Mat & mat_l, const Mat & mat_r){
+	/// Check if matrixes have the same size
 	if(mat_l.rows != mat_r.rows || mat_l.cols != mat_r.cols){
 		Mat empty;
 		empty.release();
+		/// return empty matrix if left and right are different
 		return empty;
 	}
 	else{
@@ -249,7 +251,9 @@ Mat Preprocessing:: mergeMatrixes(const Mat & mat_l, const Mat & mat_r){
 		left.convertTo(left, CV_8UC3);
 		right.convertTo(right, CV_8UC3);
 		Mat merged = Mat(left.rows, left.cols*2, CV_8UC3);
+		/// put left matrix into left part of resulting image
 		left.copyTo(merged(Rect(0, 0, left.cols, left.rows)));
+		/// put right matrix into right part of resulting image
 		right.copyTo(merged(Rect(left.cols, 0, right.cols, right.rows)));
 		return merged;
 	}
@@ -310,7 +314,7 @@ vector<vector<Point> > Preprocessing:: getShapes(const Mat & src){
 						vector<Point> hull;
 						convexHull(source_cnt[i], hull);
 						if(hull.size() < contourArea(source_cnt[i]) / 275.0){
-							cout << hull.size() << " " << contourArea(source_cnt[i]) << endl;
+//							cout << hull.size() << " " << contourArea(source_cnt[i]) << endl;
 							other_shapes.push_back(source_cnt[i]);
 						}
 						else{
