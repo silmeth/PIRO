@@ -78,23 +78,11 @@ vector<Point> findFingerContour(const Mat & cam_mat) {
 	return vector<Point>();
 }
 
-vector<Point> extendByCopyingFirstElem(vector<Point> orig){
-	for(int i=0; i<orig.size(); i++){
-		cout << "x: " << orig[0].x << "; y: " << orig[0].y << endl;
-	}
-	vector<Point> extended;
-	extended = orig;
-	Point temp = orig.at(0);
-	extended.push_back(temp);
-	return extended;
-}
-
 int findClosestToMiddle(vector<Point> hand){
 	float minDist = 1e10;
 	int closestPntInd = -1;
 	for(int i=0; i<hand.size(); i++){
-		//float pointDistToMiddle = sqrt(pow(hand[i].x-320.0, 2.0) + pow(hand[i].y-240, 2.0));
-		float pointDistToMiddle = 240-hand[i].y;
+		float pointDistToMiddle = 480-hand[i].y;
 		if(pointDistToMiddle < minDist){
 			minDist = pointDistToMiddle;
 			closestPntInd = i;
@@ -137,10 +125,7 @@ Point findFingerTip(const Mat & cam_mat) {
 	if(contour.size() == 0){
 		return Point(0, 0);
 	}
-	//vector<Point> polygon = extendByCopyingFirstElem(contour);
-	//return contour[findClosestToMiddle(contour)];
 	vector<Point> polygon = cutSurrFromContour(findClosestToMiddle(contour), contour);
-//	if(contour.size() > 0) approxPolyDP(contour, polygon, 18, false);
 
 	unsigned int sz = polygon.size();
 
