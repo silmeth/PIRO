@@ -34,31 +34,24 @@ vector<Point> Preprocessing:: getCorners(const Mat & src){
 	cvtColor(src, frameHSV, CV_BGR2HSV);
 	Mat Sat = Mat(frameHSV.rows, frameHSV.cols, CV_8UC1);
 	int ch[] = { 1, 0 };
-	// Get Saturation from HSV
+	// Get Saturation
 	mixChannels( &frameHSV, 1, &Sat, 1, ch, 1 );
 	// Blur
 	blur(Sat, Sat, Size(3,3));
 	// Apply adaptive thresholding
 	adaptiveThreshold(Sat, Sat, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 71, 30);
-
 	Mat temp3;
 	Sat.copyTo(temp3);
-//	imshow("VIDEO", temp3);
-
 	// Dilation
 	int erosion_type = 2;
 	int erosion_size = 1;
 	Mat element = getStructuringElement( erosion_type,
 										   Size( 2*erosion_size + 1, 2*erosion_size+1 ),
 										   Point( erosion_size, erosion_size ) );
-	/// Tripple erosion
 	erode(Sat, Sat, element);
 	erode(Sat, Sat, element);
 	erode(Sat, Sat, element);
-	/// Dilation
 	dilate(Sat, Sat, element);
-
-	/// Find contours
 	vector<vector<Point> > contours; //contours of the paper sheet
 	vector<Point> approx_contour; //approx contours of the paper sheet
 	vector<Vec4i> hierarchy;
@@ -94,7 +87,6 @@ vector<Point> Preprocessing:: getCorners(const Mat & src){
 		/// Approximate second longest contour (hopefully page)
 		Mat countour_mat(contours[ind_cnt2]);
 		approxPolyDP(countour_mat, approx_contour, 50, true);
-
 		/// Contour is a rectangle  - sure it is
 		if(approx_contour.size() == 4){
 			bool is_border = false;

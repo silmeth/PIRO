@@ -12,6 +12,7 @@
 
 #include <cmath>
 #include <vector>
+#include <iostream>
 using namespace std;
 
 #include "opencv2/imgproc/imgproc.hpp"
@@ -25,6 +26,8 @@ Mat skinHue(const Mat & image);
 vector<vector<Point> > findFingerContours(const Mat & cam_mat);
 
 vector<Point> findFingerContour(const Mat & cam_mat);
+
+vector<Point> extendByCopyingFirstElem(vector<Point> origin);
 
 Point findFingerTip(const Mat & cam_mat);
 

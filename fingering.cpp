@@ -44,13 +44,17 @@ vector<vector<Point> > findFingerContours(const Mat & cam_mat) {
 	vector<Vec4i> hierarchy;
 
 	int erosion_type = 2;
-	int erosion_size = 1;
+	int erosion_size = 4;
 	Mat element = getStructuringElement(erosion_type,
 										   Size(2*erosion_size + 1, 2*erosion_size+1),
 										   Point(erosion_size, erosion_size));
-	erode(hue, hue, element);
 
 	dilate(hue, hue, element);
+	erode(hue, hue, element);
+	dilate(hue, hue, element);
+	dilate(hue, hue, element);
+	erode(hue, hue, element);
+	erode(hue, hue, element);
 
 	findContours(hue, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE,
 			Point(0, 0));
@@ -74,12 +78,68 @@ vector<Point> findFingerContour(const Mat & cam_mat) {
 	return vector<Point>();
 }
 
+vector<Point> extendByCopyingFirstElem(vector<Point> orig){
+	for(int i=0; i<orig.size(); i++){
+		cout << "x: " << orig[0].x << "; y: " << orig[0].y << endl;
+	}
+	vector<Point> extended;
+	extended = orig;
+	Point temp = orig.at(0);
+	extended.push_back(temp);
+	return extended;
+}
+
+int findClosestToMiddle(vector<Point> hand){
+	float minDist = 1e10;
+	int closestPntInd = -1;
+	for(int i=0; i<hand.size(); i++){
+		//float pointDistToMiddle = sqrt(pow(hand[i].x-320.0, 2.0) + pow(hand[i].y-240, 2.0));
+		float pointDistToMiddle = 240-hand[i].y;
+		if(pointDistToMiddle < minDist){
+			minDist = pointDistToMiddle;
+			closestPntInd = i;
+		}
+	}
+	return closestPntInd;
+}
+
+vector<Point> cutSurrFromContour(int midPoint, vector<Point> src){
+	int src_len = src.size();
+	vector <Point> dest;
+	if(midPoint > 29 && midPoint<src_len-30){
+		for(int i=0; i<61; i++){
+			dest.push_back(src[midPoint-30+i]);
+		}
+	}
+	else if(midPoint < 30){
+		for(int i=src_len-(29-midPoint); i<src_len; i++){
+			dest.push_back(src[i]);
+		}
+		for(int i=0; i<30+midPoint; i++){
+			dest.push_back(src[i]);
+		}
+	}
+	else if(midPoint > src_len-30){
+		for(int i=0; i < src_len; i++){
+			dest.push_back(src[i]);
+		}
+		for(int i=0; i<30-(src_len-midPoint); i++){
+			dest.push_back(src[i]);
+		}
+	}
+	return dest;
+}
+
 Point findFingerTip(const Mat & cam_mat) {
 	const unsigned int pt_len = 30;
 
 	vector<Point> contour = findFingerContour(cam_mat);
-	vector<Point> polygon = contour;
-
+	if(contour.size() == 0){
+		return Point(0, 0);
+	}
+	//vector<Point> polygon = extendByCopyingFirstElem(contour);
+	//return contour[findClosestToMiddle(contour)];
+	vector<Point> polygon = cutSurrFromContour(findClosestToMiddle(contour), contour);
 //	if(contour.size() > 0) approxPolyDP(contour, polygon, 18, false);
 
 	unsigned int sz = polygon.size();
@@ -112,5 +172,6 @@ Point findFingerTip(const Mat & cam_mat) {
 	}
 	return Point(0, 0);
 }
+
 
 
