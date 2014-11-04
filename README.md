@@ -1,4 +1,3 @@
-PIRO 
 (Przetwarzanie i rozpoznawanie obrazów)
 =========
 
